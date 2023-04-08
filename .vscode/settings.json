@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "string_view": "cpp",
-        "*.glsl": "cpp"
+        "*.glsl": "cpp",
+        "cmath": "cpp"
     }
 }

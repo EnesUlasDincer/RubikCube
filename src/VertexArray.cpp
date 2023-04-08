@@ -1,6 +1,6 @@
 #include "../include/VertexArray.hpp"
 
-VertexArray::VertexArray(/* args */)
+VertexArray::VertexArray(bool flag)
 {
     GLCall(glGenVertexArrays(1, &vao));
     Bind();
@@ -39,4 +39,10 @@ void VertexArray::AddBuffer(VertexBuffer& vbo, VertexBufferLayout& layout)
         offset += element.count * VertexBufferLayoutElement::GetSizeOfType(element.type);
     }
     
+}
+
+void VertexArray::Config()
+{
+    GLCall(glGenVertexArrays(1, &vao));
+    Bind();
 }

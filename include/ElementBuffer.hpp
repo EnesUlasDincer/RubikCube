@@ -7,8 +7,12 @@ private:
     unsigned int ebo;
     unsigned int count;
 public:
+    ElementBuffer();
     ElementBuffer(const void* indices, unsigned int size);
     ~ElementBuffer();
+
+    // Configure the buffer
+    void Config(const void* indices, unsigned int size);
     // Bind the buffer
     void Bind() const;
     // Unbind the buffer

@@ -11,9 +11,12 @@ class VertexArray
 private:
     unsigned int vao;
 public:
-    VertexArray(/* args */);
+    VertexArray(bool flag);
+    VertexArray(){};
     ~VertexArray(){ glDeleteVertexArrays(1, &vao); };
-    
+
+    // Configure the buffer
+    void Config();
     // Bind the buffer
     void Bind() const;
     // Unbind the buffer

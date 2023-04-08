@@ -1,5 +1,6 @@
 #include "../include/ElementBuffer.hpp"
 
+ElementBuffer::ElementBuffer(){};
 
 ElementBuffer::ElementBuffer(const void* indices, unsigned int size)
 {
@@ -12,6 +13,14 @@ ElementBuffer::ElementBuffer(const void* indices, unsigned int size)
 ElementBuffer::~ElementBuffer()
 {
     glDeleteBuffers(1, &ebo);
+}
+
+void ElementBuffer::Config(const void* indices, unsigned int size)
+{
+    glGenBuffers(1, &ebo);
+    Bind();
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
+    count = size/sizeof(unsigned int);
 }
 
 void ElementBuffer::Bind() const
