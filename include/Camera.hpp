@@ -21,6 +21,11 @@ public:
 	glm::vec3 Orientation = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::vec3 Up = glm::vec3(0.0f, 1.0f, 0.0f);
 
+	// View and Proj matrices
+	glm::mat4 view = glm::mat4(1.0f);
+	glm::mat4 projection = glm::mat4(1.0f);
+	// Multiplication of view and proj matrices
+	glm::mat4 CameraMatrix = glm::mat4(1.0f);
 	// Prevents the camera from jumping around when first clicking left click
 	bool firstClick = true;
 
@@ -39,4 +44,6 @@ public:
 	void Matrix(float FOVdeg, float nearPlane, float farPlane, shaderClass& shader, const char* uniform);
 	// Handles camera inputs
 	void Inputs(GLFWwindow* window);
+	// Get the Proj*View matrices
+	glm::mat4& GetCameraView(); 
 };

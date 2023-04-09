@@ -11,8 +11,9 @@ Camera::Camera(int width, int height, glm::vec3 position)
 void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, shaderClass& shader, const char* uniform)
 {
 	// Initializes matrices since otherwise they will be the null matrix
-	glm::mat4 view = glm::mat4(1.0f);
-	glm::mat4 projection = glm::mat4(1.0f);
+	view = glm::mat4(1.0f);
+	projection = glm::mat4(1.0f);
+	CameraMatrix = glm::mat4(1.0f);
 
 	// Makes camera look in the right direction from the right position
 	view = glm::lookAt(Position, Position + Orientation, Up);
@@ -21,9 +22,10 @@ void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, shaderClass& 
 	// float k = 2.0f;
 	// projection = glm::ortho(k*-1.0f, k*1.0f,k*-1.0f, k*1.0f,k*-1.0f, k*1.0f);
 
+	CameraMatrix = projection * view;
 
 	// Exports the camera matrix to the Vertex Shader
-	glUniformMatrix4fv(glGetUniformLocation(shader.GetProgram(), uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
+	glUniformMatrix4fv(glGetUniformLocation(shader.GetProgram(), uniform), 1, GL_FALSE, glm::value_ptr(CameraMatrix));
 }
 
 
@@ -112,4 +114,9 @@ void Camera::Inputs(GLFWwindow* window)
 		// Makes sure the next time the camera looks around it doesn't jump
 		firstClick = true;
 	}
+}
+
+glm::mat4& Camera::GetCameraView()
+{
+	return CameraMatrix;
 }

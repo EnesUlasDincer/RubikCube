@@ -289,6 +289,7 @@ int main(void)
         // Updates and exports the camera matrix to the Vertex Shader
 		camera.Matrix(45.0f, 0.1f, 100.0f, shader_cube, "camMatrix");
 
+
         //GLCall(glUniformMatrix4fv(camLoc, 1, GL_FALSE, glm::value_ptr(cube_cam)));
 
         glm::mat4 cube_model = glm::mat4(1.0f);
@@ -368,7 +369,7 @@ int main(void)
         va_cube.UnBind();
         shader_cube.Deactivate();
 
-        Cube.Draw();
+        Cube.Draw(camera.GetCameraView());
 
         //display(window, ball, shader_01.GetProgram() ,_array, _array_ele);
 

@@ -171,8 +171,8 @@ void Cube::SetColors()
     smallCubes[2].faceColors.ColorRightFace = blue;
     smallCubes[2].faceColors.ColorLeftFace  = black;
 
-    smallCubes[3].faceColors.ColorFrontFace = black;
-    smallCubes[3].faceColors.ColorBackFace  = white;
+    smallCubes[3].faceColors.ColorFrontFace = green;
+    smallCubes[3].faceColors.ColorBackFace  = black;
     smallCubes[3].faceColors.ColorRightFace = black;
     smallCubes[3].faceColors.ColorLeftFace  = black;
 
@@ -181,13 +181,13 @@ void Cube::SetColors()
     smallCubes[4].faceColors.ColorRightFace = black;
     smallCubes[4].faceColors.ColorLeftFace  = black;
 
-    smallCubes[5].faceColors.ColorFrontFace = green;
-    smallCubes[5].faceColors.ColorBackFace  = black;
+    smallCubes[5].faceColors.ColorFrontFace = black;
+    smallCubes[5].faceColors.ColorBackFace  = white;
     smallCubes[5].faceColors.ColorRightFace = black;
     smallCubes[5].faceColors.ColorLeftFace  = black;
 
-    smallCubes[6].faceColors.ColorFrontFace = black;
-    smallCubes[6].faceColors.ColorBackFace  = white;
+    smallCubes[6].faceColors.ColorFrontFace = green;
+    smallCubes[6].faceColors.ColorBackFace  = black;
     smallCubes[6].faceColors.ColorRightFace = black;
     smallCubes[6].faceColors.ColorLeftFace  = orange;
 
@@ -196,8 +196,8 @@ void Cube::SetColors()
     smallCubes[7].faceColors.ColorRightFace = black;
     smallCubes[7].faceColors.ColorLeftFace  = orange;
 
-    smallCubes[8].faceColors.ColorFrontFace = green;
-    smallCubes[8].faceColors.ColorBackFace  = black;
+    smallCubes[8].faceColors.ColorFrontFace = black;
+    smallCubes[8].faceColors.ColorBackFace  = white;
     smallCubes[8].faceColors.ColorRightFace = black;
     smallCubes[8].faceColors.ColorLeftFace  = orange;
     #pragma endregion FirstRow
@@ -218,8 +218,8 @@ void Cube::SetColors()
     smallCubes[11].faceColors.ColorRightFace = blue;
     smallCubes[11].faceColors.ColorLeftFace  = black;
 
-    smallCubes[12].faceColors.ColorFrontFace = black;
-    smallCubes[12].faceColors.ColorBackFace  = white;
+    smallCubes[12].faceColors.ColorFrontFace = green;
+    smallCubes[12].faceColors.ColorBackFace  = black;
     smallCubes[12].faceColors.ColorRightFace = black;
     smallCubes[12].faceColors.ColorLeftFace  = black;
 
@@ -228,13 +228,13 @@ void Cube::SetColors()
     smallCubes[13].faceColors.ColorRightFace = black;
     smallCubes[13].faceColors.ColorLeftFace  = black;
 
-    smallCubes[14].faceColors.ColorFrontFace = green;
-    smallCubes[14].faceColors.ColorBackFace  = black;
+    smallCubes[14].faceColors.ColorFrontFace = black;
+    smallCubes[14].faceColors.ColorBackFace  = white;
     smallCubes[14].faceColors.ColorRightFace = black;
     smallCubes[14].faceColors.ColorLeftFace  = black;
 
-    smallCubes[15].faceColors.ColorFrontFace = black;
-    smallCubes[15].faceColors.ColorBackFace  = white;
+    smallCubes[15].faceColors.ColorFrontFace = green;
+    smallCubes[15].faceColors.ColorBackFace  = black;
     smallCubes[15].faceColors.ColorRightFace = black;
     smallCubes[15].faceColors.ColorLeftFace  = orange;
 
@@ -243,8 +243,8 @@ void Cube::SetColors()
     smallCubes[16].faceColors.ColorRightFace = black;
     smallCubes[16].faceColors.ColorLeftFace  = orange;
 
-    smallCubes[17].faceColors.ColorFrontFace = green;
-    smallCubes[17].faceColors.ColorBackFace  = black;
+    smallCubes[17].faceColors.ColorFrontFace = black;
+    smallCubes[17].faceColors.ColorBackFace  = white;
     smallCubes[17].faceColors.ColorRightFace = black;
     smallCubes[17].faceColors.ColorLeftFace  = orange;
     #pragma endregion SecondRow
@@ -265,8 +265,8 @@ void Cube::SetColors()
     smallCubes[20].faceColors.ColorRightFace = blue;
     smallCubes[20].faceColors.ColorLeftFace  = black;
 
-    smallCubes[21].faceColors.ColorFrontFace = black;
-    smallCubes[21].faceColors.ColorBackFace  = white;
+    smallCubes[21].faceColors.ColorFrontFace = green;
+    smallCubes[21].faceColors.ColorBackFace  = black;
     smallCubes[21].faceColors.ColorRightFace = black;
     smallCubes[21].faceColors.ColorLeftFace  = black;
 
@@ -275,13 +275,13 @@ void Cube::SetColors()
     smallCubes[22].faceColors.ColorRightFace = black;
     smallCubes[22].faceColors.ColorLeftFace  = black;
 
-    smallCubes[23].faceColors.ColorFrontFace = green;
-    smallCubes[23].faceColors.ColorBackFace  = black;
+    smallCubes[23].faceColors.ColorFrontFace = black;
+    smallCubes[23].faceColors.ColorBackFace  = white;
     smallCubes[23].faceColors.ColorRightFace = black;
     smallCubes[23].faceColors.ColorLeftFace  = black;
 
-    smallCubes[24].faceColors.ColorFrontFace = black;
-    smallCubes[24].faceColors.ColorBackFace  = white;
+    smallCubes[24].faceColors.ColorFrontFace = green;
+    smallCubes[24].faceColors.ColorBackFace  = black;
     smallCubes[24].faceColors.ColorRightFace = black;
     smallCubes[24].faceColors.ColorLeftFace  = orange;
 
@@ -290,17 +290,17 @@ void Cube::SetColors()
     smallCubes[25].faceColors.ColorRightFace = black;
     smallCubes[25].faceColors.ColorLeftFace  = orange;
 
-    smallCubes[26].faceColors.ColorFrontFace = green;
-    smallCubes[26].faceColors.ColorBackFace  = black;
+    smallCubes[26].faceColors.ColorFrontFace = black;
+    smallCubes[26].faceColors.ColorBackFace  = white;
     smallCubes[26].faceColors.ColorRightFace = black;
     smallCubes[26].faceColors.ColorLeftFace  = orange;
     #pragma endregion ThirdRow
 }
 
-void Cube::Draw()
+void Cube::Draw(glm::mat4& CameraMatix)
 {
     for (int i = 0; i < n_cubes; i++)
     {
-        smallCubes[i].Draw();
+        smallCubes[i].Draw(CameraMatix);
     }
 }

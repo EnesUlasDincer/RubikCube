@@ -163,7 +163,7 @@ struct SmallCube{
     // Which cube I am drawing and
     // What is the color of the faces of the cube
 
-    void Draw()
+    void Draw(glm::mat4& CameraMatix)
     {
         // Bind the shader and Vertex array
         smallCubeProgram.Activate();
@@ -188,15 +188,16 @@ struct SmallCube{
         int camLoc = glGetUniformLocation(smallCubeProgram.GetProgram(), "camMatrix");
         
         GLCall(glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
-        modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 1.0f));
-        GLCall(glUniformMatrix4fv(camLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
+        //modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.0f, 1.0f));
+
+        GLCall(glUniformMatrix4fv(camLoc, 1, GL_FALSE, glm::value_ptr(CameraMatix)));
         
         PainterMachine(face_ebos.backFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth)
-        PainterMachine(face_ebos.frontFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth)
-        PainterMachine(face_ebos.rightFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth)
-        PainterMachine(face_ebos.leftFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth)
-        PainterMachine(face_ebos.upFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth)
-        PainterMachine(face_ebos.downFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth)
+        PainterMachine(face_ebos.frontFace, faceColors.ColorFrontFace, smallCubeProgram, LineWidth)
+        PainterMachine(face_ebos.rightFace, faceColors.ColorRightFace, smallCubeProgram, LineWidth)
+        PainterMachine(face_ebos.leftFace, faceColors.ColorLeftFace, smallCubeProgram, LineWidth)
+        PainterMachine(face_ebos.upFace, faceColors.ColorUpFace, smallCubeProgram, LineWidth)
+        PainterMachine(face_ebos.downFace, faceColors.ColorDownFace, smallCubeProgram, LineWidth)
         va.UnBind();
         smallCubeProgram.Deactivate();
     }
@@ -263,7 +264,7 @@ public:
     void SetColors();
 
     // Draw the cube by drawing small cubes
-    void Draw();
+    void Draw(glm::mat4& CameraMatix);
 };
 
 
