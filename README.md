@@ -1,3 +1,3 @@
 # RubikCube
 
-!{alt text}[]
+![Alt text](/ScreenShots/Cube.png?raw=true "Cube")
