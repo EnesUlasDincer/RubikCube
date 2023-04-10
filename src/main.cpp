@@ -334,10 +334,6 @@ int main(void)
             float Ry = cube_vertices[0];
             float Rz = 0.0f;
 
-        
-            //glPushMatrix();
-            //glTranslatef(0.0f ,-sin(glm::radians(rotation_x)) , sin(glm::radians(rotation_x)) );
-            //glPopMatrix();
 	    }else{
             rotation_x = 0.0f;
             cube_model = glm::translate(cube_model, glm::vec3( 0.0f, -sin(glm::radians(rotation_x)) , sin(glm::radians(rotation_x)) ));
@@ -369,9 +365,10 @@ int main(void)
         va_cube.UnBind();
         shader_cube.Deactivate();
 
-        Cube.Draw(camera.GetCameraView());
-
-        //display(window, ball, shader_01.GetProgram() ,_array, _array_ele);
+        Cube.SelectSmallCube(camera.GetCameraView(),camera.GetView(),camera.GetProjection(),window);
+        Cube.Draw(camera.GetCameraView(), window, prevTime);
+        
+        //display(window, ball, shader_01.GetProgram() ,_array, _array_ele);,
 
         // Display the texture
         //dispTexture(window, textureObj, shader_text, va_text, ebo_text);

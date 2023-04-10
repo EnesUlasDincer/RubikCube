@@ -25,21 +25,25 @@ Cube::Cube(float _cubeLen)
 
 void Cube::Init(const::std::string& vertexShader, const::std::string& fragmentShader)
 {
-    // Initilazing every small cube with vertex/fragment shader
-    for (int i = 0; i < n_cubes; i++)
-    {
-        CubeShaders[i].init(vertexShader, fragmentShader);
-        smallCubes[i].smallCubeProgram.SetProgram(CubeShaders[i].GetProgram());
-        smallCubes[i].CubeID = i;
-    }
-
-    int loc = glGetUniformLocation(smallCubes[0].smallCubeProgram.GetProgram(), "uniColor");
-    
     // Set off-sets for the small cubes
     Setoffset();
 
     // Set the colors of each face
     SetColors();
+
+    // Initilazing every small cube with vertex/fragment shader
+    for (int i = 0; i < n_cubes; i++)
+    {
+        // CubeShaders[i].init(vertexShader, fragmentShader);
+        // smallCubes[i].smallCubeProgram.SetProgram(CubeShaders[i].GetProgram());
+        smallCubes[i].smallCubeProgram.init(vertexShader, fragmentShader);
+        smallCubes[i].CubeID = i;
+        smallCubes[i].CubeLen = cubeLen;
+        smallCubes[i].center_coor = glm::vec4(getCenterCoor_x() + smallCubes[i].GetOffset_x(), getCenterCoor_y() + smallCubes[i].GetOffset_y(), getCenterCoor_z() + smallCubes[i].GetOffset_z(), 1.0f);
+    }
+
+    int loc = glGetUniformLocation(smallCubes[0].smallCubeProgram.GetProgram(), "uniColor");
+    
 
     // Set the vertices of each cube
     SetVertices();
@@ -297,10 +301,109 @@ void Cube::SetColors()
     #pragma endregion ThirdRow
 }
 
-void Cube::Draw(glm::mat4& CameraMatix)
+void Cube::Draw(glm::mat4& CameraMatrix, GLFWwindow* window, double prevTime)
 {
     for (int i = 0; i < n_cubes; i++)
     {
-        smallCubes[i].Draw(CameraMatix);
+        smallCubes[i].Draw(CameraMatrix, window, prevTime);
+    }
+}
+
+void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window)
+{
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+        
+        // Convert mouse coordinates to normalized device coordinates
+        int windowWidth, windowHeight;
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        float ndcX = (2.0f * mouseX) / windowWidth - 1.0f;
+        float ndcY = 1.0f - (2.0f * mouseY) / windowHeight;
+
+
+        // get the view and projection matrices
+        glm::mat4 viewMatrix = ViewMatrix;
+        glm::mat4 projectionMatrix = ProjectionMatrix;
+
+        // compute the ray in world space
+        glm::vec4 viewport = glm::vec4(0.0f, 0.0f, (float)windowWidth, (float)windowHeight);
+        glm::vec3 rayWorld = glm::unProject(glm::vec3(ndcX, ndcY, 0.0f), viewMatrix, projectionMatrix, viewport);
+        glm::vec3 rayDir = glm::normalize(glm::unProject(glm::vec3(ndcX, ndcY, 1.0f), viewMatrix, projectionMatrix, viewport) - rayWorld);
+
+        vec3_Printer(rayDir);
+
+        uint data[3];
+        glReadPixels(ndcX, ndcY, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, data);
+
+        if (ndcX > 0.1)
+        {
+            COUT << "YSE" << ENDL;
+        }
+        
+        std::map<int, double> CosineSimilarityMap;
+        // MostSimiliarOne();
+        for (int i = 0; i < n_cubes; i++)
+        {
+            CosineSimilarityMap.insert(std::make_pair(i,cosine_similarity(rayDir, smallCubes[i].center_coor)));
+        }
+        auto max_element = std::max_element(CosineSimilarityMap.begin(), CosineSimilarityMap.end(),[](const auto& pair1, const auto& pair2) {
+            return pair1.second < pair2.second;
+        });
+
+        std::cout << "The key of the biggest element is: " << max_element->first << std::endl;
+    
+        // Test ray against scene objects
+        // for (Object* obj : sceneObjects) {
+        //     if (obj->intersect(rayOrigin, rayDir)) {
+        //         // Do something with the intersected object
+        //         break;
+        //     }
+        // }
+    }
+
+
+
+
+    ///
+
+
+}
+
+void invertMatrix4x4(glm::mat4 matrixIN, glm::mat4 MatrixOUT) {
+    MatrixOUT = glm::inverse(matrixIN);
+}
+
+double map(double value, int inputMin, int inputMax, int outputMin, int outputMax) {
+    // Calculate the range of the input and output values
+    int inputRange = inputMax - inputMin;
+    int outputRange = outputMax - outputMin;
+
+    // Map the input value to the output range
+    double mappedValue = (double)((double)((double)((double)(value - inputMin) * outputRange) / inputRange) + outputMin);
+
+    // Return the mapped value
+    return mappedValue;
+}
+
+double cosine_similarity(glm::vec3 RayDir, glm::vec4 SmallCubeCenter) {
+    glm::vec3 smallCubeCenterInVec3 = glm::vec3(SmallCubeCenter[0],SmallCubeCenter[1],SmallCubeCenter[2]);
+    double dot_product = 0.0;
+    double norm1 = 0.0;
+    double norm2 = 0.0;
+    
+    // Calculate dot product and norms
+    for (int i = 0; i < RayDir.length(); i++) {
+        dot_product += RayDir[i] * smallCubeCenterInVec3[i];
+        norm1 += RayDir[i] * RayDir[i];
+        norm2 += smallCubeCenterInVec3[i] * smallCubeCenterInVec3[i];
+    }
+    
+    // Calculate cosine similarity
+    double denom = std::sqrt(norm1) * std::sqrt(norm2);
+    if (denom == 0.0) {
+        return 0.0;
+    } else {
+        return dot_product / denom;
     }
 }

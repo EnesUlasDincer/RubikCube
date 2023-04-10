@@ -10,6 +10,7 @@
 #include "../include/glm/glm/gtx/vector_angle.hpp"
 #include "../include/glm/glm/gtx/rotate_vector.hpp"
 
+#include <iostream>
 
 #include"shaderClass.hpp"
 
@@ -45,5 +46,15 @@ public:
 	// Handles camera inputs
 	void Inputs(GLFWwindow* window);
 	// Get the Proj*View matrices
-	glm::mat4& GetCameraView(); 
+	glm::mat4& GetCameraView(){return CameraMatrix;}; 
+	// Get the Projection matrice
+	glm::mat4& GetProjection(){return projection;}; 
+	// Get the View matrice
+	glm::mat4& GetView(){return view;}; 
+	// Take the current window size
+	void GetandSetWindowSize(GLFWwindow* window){glfwGetWindowSize(window, &width, &height);};
 };
+
+void printMatrix(const glm::mat4& matrix);
+glm::mat4 perspectiveToTransformation(const glm::mat4& projection);
+glm::mat4 perspectiveToHomogeneous(float fovy, float aspect, float zNear, float zFar);

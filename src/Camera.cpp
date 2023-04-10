@@ -17,8 +17,15 @@ void Camera::Matrix(float FOVdeg, float nearPlane, float farPlane, shaderClass& 
 
 	// Makes camera look in the right direction from the right position
 	view = glm::lookAt(Position, Position + Orientation, Up);
+	//printMatrix(view);
+	
 	// Adds perspective to the scene
-	projection = glm::perspective(glm::radians(FOVdeg), (float)width / height, nearPlane, farPlane);
+	projection = glm::perspective(glm::radians(90.0f), (float)width / height, nearPlane, farPlane);
+	// printMatrix(projection);
+	// projection = perspectiveToTransformation(projection);
+	// printMatrix(projection);
+
+
 	// float k = 2.0f;
 	// projection = glm::ortho(k*-1.0f, k*1.0f,k*-1.0f, k*1.0f,k*-1.0f, k*1.0f);
 
@@ -114,9 +121,28 @@ void Camera::Inputs(GLFWwindow* window)
 		// Makes sure the next time the camera looks around it doesn't jump
 		firstClick = true;
 	}
+
+    GetandSetWindowSize(window);
 }
 
-glm::mat4& Camera::GetCameraView()
-{
-	return CameraMatrix;
+void printMatrix(const glm::mat4& matrix) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            std::cout << matrix[j][i] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+glm::mat4 perspectiveToTransformation(const glm::mat4& projection) {
+    glm::vec3 translation = glm::vec3(projection[3]);
+    glm::quat rotation = glm::quat_cast(projection);
+    return glm::translate(translation) * glm::mat4_cast(rotation);
+}
+
+glm::mat4 perspectiveToHomogeneous(float fovy, float aspect, float zNear, float zFar) {
+    glm::mat4 perspective = glm::perspective(glm::radians(fovy), aspect, zNear, zFar);
+    glm::mat4 homogeneous = glm::mat4(perspective[0], perspective[1], perspective[2], glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    return glm::transpose(homogeneous); // Transpose the matrix to match row-major order
+
 }
