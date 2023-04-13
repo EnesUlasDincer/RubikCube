@@ -154,12 +154,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         
         // Do rendering part in specific object!!
 
-        // //Render triangles with different id colors to back buffer
-        // glUniform4f( Color, 0.0, 1.0, 0.0, 1.0 );
-        // glDrawArrays( GL_TRIANGLES, 0, 3 );
-        
-        // glUniform4f( Color, 0.0, 0.0, 1.0, 1.0 );
-        // glDrawArrays(GL_TRIANGLES, 3, 3);
+    
         
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
@@ -169,22 +164,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
         mouseProperties_extern.ndcMouseX = mouseX;
         mouseProperties_extern.ndcMouseY = windowHeight - mouseY;
-        
-        // Run this in your main loop since rightnow we have not rendered the back buffer
-        // unsigned char ClickedPixel[4];
-        // glReadPixels(ndcMouseX, ndcMouseY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, ClickedPixel);
 
-        // Then, create logic map
-        // if (pixel[0]==0 && pixel[1]==255 && pixel[2]==0) std::cout << "First triangle"<<std::endl;
-        // else if (pixel[0]==0 && pixel[1]==0 && pixel[2]==255) std::cout << "Second triangle"<<std::endl;
-        // else std::cout << "None"<<std::endl;
-        
-        // std::cout << "R: " << (int)pixel[0] << std::endl;
-        // std::cout << "G: " << (int)pixel[1] << std::endl;
-        // std::cout << "B: " << (int)pixel[2] << std::endl;
-        // std::cout << std::endl;
-        
-        // //glfwSwapBuffers(window); //you can enable (and disable the other) this to display the triangles with their hidden id colors
+
     }else if(action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_RIGHT){
         mouseProperties_extern.MOUSE_RIGHT_CLICK = false;
     }

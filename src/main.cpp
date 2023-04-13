@@ -101,6 +101,9 @@ int main(void)
         COUT << "Erroe in glew!" << ENDL;
     }
 
+    // Enable double buffering
+    glfwSwapInterval(1);
+
 	// Specify the viewport of OpenGL in the Window
 	// In this case the viewport goes from x = 0, y = 0, to x = 800, y = 800
 	glViewport(0, 0, 800, 800);
@@ -238,6 +241,7 @@ int main(void)
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     float sinX;
+    double frameRate = 120, currentTime, previousTime = 0.0;
 	// Main while loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -338,7 +342,11 @@ int main(void)
         shader_cube.Deactivate();
 
         //Cube.Draw(camera.GetCameraView(), window, prevTime);
-        
+        currentTime = glfwGetTime();
+        if (currentTime - previousTime >= 1/frameRate){
+        previousTime = currentTime;
+        // update();
+        }
         Cube.SelectSmallCube(camera.GetCameraView(),camera.GetView(),camera.GetProjection(),window, mouseProperties_extern);
         
         //display(window, ball, shader_01.GetProgram() ,_array, _array_ele);,

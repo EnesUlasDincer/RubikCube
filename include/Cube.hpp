@@ -267,9 +267,6 @@ struct SmallCube{
 
 };
 
-// void SmallCube::GetCenterCoor_x(){
-    
-// }
 
 class Cube
 {

@@ -311,40 +311,75 @@ void Cube::Draw(glm::mat4& CameraMatrix, GLFWwindow* window, double prevTime)
 
 void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern)
 {
-    if (mouseProperties_extern.MOUSE_RIGHT_CLICK) {
+    static bool click = false;
+    
+    if (click == true && !mouseProperties_extern.MOUSE_RIGHT_CLICK){click = false;}
+    
+    
+    if (click == false && mouseProperties_extern.MOUSE_RIGHT_CLICK) {
+        // Disable double buffering
 
-        // COUT << "HERE" << ENDL;// Specify the color of the background
+        int window_width, window_height;
+        glfwGetWindowSize(window, &window_width, &window_height);
+        // Create off-screen FBO
+        GLuint fbo;
+        glGenFramebuffers(1, &fbo);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+        // create renderbuffer object for color attachment
+        GLuint color_rb;
+        glGenRenderbuffers(1, &color_rb);
+        glBindRenderbuffer(GL_RENDERBUFFER, color_rb);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, window_width, window_height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color_rb);
+
+        
+
+
+        // Create depth buffer renderbuffer for FBO
+        GLuint depthRenderbuffer;
+        glGenRenderbuffers(1, &depthRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, window_width, window_height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
+
+        // check FBO completeness
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        if (status != GL_FRAMEBUFFER_COMPLETE) {
+            fprintf(stderr, "Failed to create FBO\n");
+            exit(1);
+        }
+
+        click = mouseProperties_extern.MOUSE_RIGHT_CLICK;
         // Render the back buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for (int i = 0; i < n_cubes; i++)
         {
             smallCubes[i].Draw(CameraMatrix, window, 0.0, true);
         }
-
-        glFlush(); //forces all drawing commands to be sent to the graphics card and executed immediately.
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //glFlush(); //forces all drawing commands to be sent to the graphics card and executed immediately.
 
         // Run this in your main loop since rightnow we have not rendered the back buffer
         unsigned char ClickedPixel[4];
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glReadPixels(mouseProperties_extern.ndcMouseX, mouseProperties_extern.ndcMouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, ClickedPixel);
-
-        // vec4_Printer(ClickedPixel);
-        // int R_channel = ClickedPixel[0];
-        // int G_channel = ClickedPixel[1];
-        // int B_channel = ClickedPixel[2];
-
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        
         int id = IdentifySmallCube(ClickedPixel);
+        COUT << id << ENDL;
 
-        // Then, create logic map
-        // if (pixel[0]==0 && pixel[1]==255 && pixel[2]==0) std::cout << "First triangle"<<std::endl;
-        // else if (pixel[0]==0 && pixel[1]==0 && pixel[2]==255) std::cout << "Second triangle"<<std::endl;
-        // else std::cout << "None"<<std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // get the view and projection matrices
         glm::mat4 viewMatrix = ViewMatrix;
         glm::mat4 projectionMatrix = ProjectionMatrix;
 
-        //
+        /* Check if double buffering is enabled */
+        //GLint double_buffer;
+        //glGetIntegerv(GL_DOUBLEBUFFER, &double_buffer);
+        //bool double_buffering_enabled = (double_buffer == GL_TRUE);
+
         //std::map<int, double> CosineSimilarityMap;
         //// MostSimiliarOne();
         //for (int i = 0; i < n_cubes; i++)
@@ -356,13 +391,21 @@ void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::m
         //});
 
         //std::cout << "The key of the biggest element is: " << max_element->first << std::endl;
-    }else{
+        
+    }
+    if(click == false || (click && mouseProperties_extern.MOUSE_RIGHT_CLICK))
+    {
         for (int i = 0; i < n_cubes; i++)
         {
             smallCubes[i].Draw(CameraMatrix, window, 0.0,false);
         }
     }
 
+    // for (int i = 0; i < n_cubes; i++)
+    //     {
+    //         smallCubes[i].Draw(CameraMatrix, window, 0.0, false);
+    //     }
+    
 
 }
 
