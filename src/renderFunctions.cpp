@@ -1,5 +1,5 @@
 #include "../include/renderFunctions.hpp"
-
+#include "../include/MouseProperties.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int heigth)
 {
@@ -106,101 +106,6 @@ static int DrawingTypeSelector(GLFWwindow* window)
     return DrawingType;
 }
 
-static bool InitBallPose(GLFWwindow* window)
-{
-    static bool initBallPose = false;
-
-    static int state = 0;
-
-    STATE_MACHINE(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS, state, initBallPose, false, true);
-    
-    return initBallPose;
-}
-
-
-
-static bool GAME_FLAG = false;
-static bool GAME_PAUSE = false;
-void display(GLFWwindow* window, unsigned int shaderProgram, VertexArray* vertexArray_arr, ElementBuffer* elementBuffer_arr)
-{   
-    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-    {
-        GAME_PAUSE = true;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        GAME_PAUSE = false;
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
-    {
-        
-    }
-
-    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS)
-    {
-        infoHelp();
-    }
-    
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS || GAME_FLAG)
-    {
-        // once it is start, there is no need another s press
-        GAME_FLAG = true;
-        if( !GAME_PAUSE ){
-            // ball start
-            
-        }
-
-
-        int DrawingType = DrawingTypeSelector(window);
-        ObjectTypes objectType = ObjectTypeSelector(window);
-        Colors color = ColorSelector(window);
-
-        int vertexColorLocation = glGetUniformLocation(shaderProgram, "uniColor");
-        if (color == Colors::Green)
-        {
-            GLCall(glUniform4f(vertexColorLocation, 0.0f, 1.0f, 0.0f, 1.0f));
-        }else if(color == Colors::Red)
-        {
-            GLCall(glUniform4f(vertexColorLocation, 1.0f, 0.0f, 0.0f, 1.0f));
-        }
-        
-
-        if (objectType == ObjectTypes::Sphere)
-        {
-            vertexArray_arr[1].Bind();
-            GLCall(glDrawElements(DrawingType, elementBuffer_arr[1].GetCount(), GL_UNSIGNED_INT, 0));
-            vertexArray_arr[1].UnBind();
-            elementBuffer_arr[1].UnBind();
-        }
-        if (objectType == ObjectTypes::Rectangle)
-        {
-            vertexArray_arr[0].Bind();
-            GLCall(glDrawElements(DrawingType, elementBuffer_arr[0].GetCount(), GL_UNSIGNED_INT, 0));
-            vertexArray_arr[0].UnBind();
-            elementBuffer_arr[0].UnBind();
-        }
-        glUseProgram(0);
-    }
-}
-
-void dispTexture(GLFWwindow* window, Texture& textureObj, shaderClass& shader_text, VertexArray& vertexArray, ElementBuffer& elementBuffer)
-{
-    shader_text.Activate();
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,textureObj.ID);
-    // textureObj.Bind();
-    vertexArray.Bind();
-    glDrawElements(GL_TRIANGLES, elementBuffer.GetCount(), GL_UNSIGNED_INT, 0);
-
-    vertexArray.UnBind();
-    elementBuffer.UnBind();
-    shader_text.Deactivate();
-}
-
-
 void GLClearError()
 {
     while(glGetError() != GL_NO_ERROR);
@@ -232,4 +137,56 @@ void colorChanger(float * ColorChannel, float increment)
             color_increment = +increment;
     
     *ColorChannel += color_increment;
+}
+
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+    // MOUSE_RIGHT_CLICK = false;
+    if ( action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_RIGHT) {
+        
+        // MOUSE_RIGHT_CLICK implies there is a mouse click occured.
+        mouseProperties_extern.MOUSE_RIGHT_CLICK = true;
+        
+        // //glDrawBuffer(GL_BACK); //back buffer is default thus no need
+        
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        // Do rendering part in specific object!!
+
+        // //Render triangles with different id colors to back buffer
+        // glUniform4f( Color, 0.0, 1.0, 0.0, 1.0 );
+        // glDrawArrays( GL_TRIANGLES, 0, 3 );
+        
+        // glUniform4f( Color, 0.0, 0.0, 1.0, 1.0 );
+        // glDrawArrays(GL_TRIANGLES, 3, 3);
+        
+        double mouseX, mouseY;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+        
+        // Convert mouse coordinates to normalized device coordinates
+        int windowWidth, windowHeight;
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        mouseProperties_extern.ndcMouseX = mouseX;
+        mouseProperties_extern.ndcMouseY = windowHeight - mouseY;
+        
+        // Run this in your main loop since rightnow we have not rendered the back buffer
+        // unsigned char ClickedPixel[4];
+        // glReadPixels(ndcMouseX, ndcMouseY, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, ClickedPixel);
+
+        // Then, create logic map
+        // if (pixel[0]==0 && pixel[1]==255 && pixel[2]==0) std::cout << "First triangle"<<std::endl;
+        // else if (pixel[0]==0 && pixel[1]==0 && pixel[2]==255) std::cout << "Second triangle"<<std::endl;
+        // else std::cout << "None"<<std::endl;
+        
+        // std::cout << "R: " << (int)pixel[0] << std::endl;
+        // std::cout << "G: " << (int)pixel[1] << std::endl;
+        // std::cout << "B: " << (int)pixel[2] << std::endl;
+        // std::cout << std::endl;
+        
+        // //glfwSwapBuffers(window); //you can enable (and disable the other) this to display the triangles with their hidden id colors
+    }else if(action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_RIGHT){
+        mouseProperties_extern.MOUSE_RIGHT_CLICK = false;
+    }
+    
 }

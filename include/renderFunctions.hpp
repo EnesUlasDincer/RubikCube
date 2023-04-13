@@ -67,14 +67,6 @@ void framebuffer_editor(GLFWwindow* window);
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window);
 
-
-// Pre-definition
-class VertexArray;
-// Display function
-void display(GLFWwindow* window, unsigned int shaderProgram, VertexArray* vertexArray_arr, ElementBuffer* elementBuffer_arr);
-
-void dispTexture(GLFWwindow* window, Texture& textureObj, shaderClass& shader_text, VertexArray& vertexArray, ElementBuffer& elementBuffer);
-
 void colorChanger(float * ColorChannel, float increment);
 
 // Prints general information about program
@@ -82,3 +74,4 @@ void info();
 // Prints information about controllers
 void infoHelp();
 
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);

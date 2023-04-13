@@ -5,20 +5,26 @@
 #include "VertexBuffer.hpp"
 #include "ElementBuffer.hpp"
 #include "Camera.hpp"
+#include "MouseProperties.hpp"
+
 
 #include <map>
 #include <algorithm>
 #include <typeinfo>
+#include <cmath>
 
 #ifndef COLOR_CODES
 #define COLOR_CODES
-#define RED_COLOR_CODE      1.0f, 0.0f, 0.0f, 1.0f
-#define GREEN_COLOR_CODE    0.0f, 1.0f, 0.0f, 1.0f
-#define BLUE_COLOR_CODE     0.0f, 0.0f, 1.0f, 1.0f
-#define YELLOW_COLOR_CODE   1.0f, 1.0f, 0.0f, 1.0f
-#define ORANGE_COLOR_CODE   1.0f, 0.4f, 0.0f, 1.0f
-#define WHITE_COLOR_CODE    1.0f, 1.0f, 1.0f, 1.0f
-#define BLACK_COLOR_CODE    0.0f, 0.0f, 0.0f, 1.0f
+#define RED_COLOR_CODE(x)      abs(1.0f-x), abs(0.0f-x), abs(0.0f-x), 1.0f
+#define GREEN_COLOR_CODE(x)    abs(0.0f-x), abs(1.0f-x), abs(0.0f-x), 1.0f
+#define BLUE_COLOR_CODE(x)     abs(0.0f-x), abs(0.0f-x), abs(1.0f-x), 1.0f
+#define YELLOW_COLOR_CODE(x)   abs(1.0f-x), abs(1.0f-x), abs(0.0f-x), 1.0f
+#define ORANGE_COLOR_CODE(x)   abs(1.0f-x), abs(0.4f-x), abs(0.0f-x), 1.0f
+#define WHITE_COLOR_CODE(x)    abs(1.0f-x), abs(1.0f-x), abs(1.0f-x), 1.0f
+#define BLACK_COLOR_CODE(x)    abs(0.0f-x), abs(0.0f-x), abs(0.0f-x), 1.0f
+
+#define bas(x)      abs(1.0f-x)
+
 #endif
 
 enum Colors
@@ -43,58 +49,57 @@ const float LineWidth = 10.0f;
 #define vec4_Printer(x) ;\
     COUT << #x << " : " << x[0] << " , " << x[1] << " , " << x[2] << " , " << x[3] << ENDL
 
-#define DrawTriangle_red(ElementBuffer,smallCubeProgram) ;\
-    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), RED_COLOR_CODE); ;\
+#define DrawTriangle_red(ElementBuffer,smallCubeProgram,ColorDiscount) ;\
+    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), RED_COLOR_CODE(ColorDiscount)); ;\
     GLCall(glDrawElements(GL_TRIANGLE_FAN, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
-#define DrawTriangle_blue(ElementBuffer,smallCubeProgram) ;\
-        glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), BLUE_COLOR_CODE); ;\
+#define DrawTriangle_blue(ElementBuffer,smallCubeProgram,ColorDiscount) ;\
+        glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), BLUE_COLOR_CODE(ColorDiscount)); ;\
     GLCall(glDrawElements(GL_TRIANGLE_FAN, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
-#define DrawTriangle_green(ElementBuffer,smallCubeProgram) ;\
-    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), GREEN_COLOR_CODE); ;\
+#define DrawTriangle_green(ElementBuffer,smallCubeProgram,ColorDiscount) ;\
+    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), GREEN_COLOR_CODE(ColorDiscount)); ;\
     GLCall(glDrawElements(GL_TRIANGLE_FAN, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
-#define DrawTriangle_orange(ElementBuffer,smallCubeProgram) ;\
-    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), ORANGE_COLOR_CODE); ;\
+#define DrawTriangle_orange(ElementBuffer,smallCubeProgram,ColorDiscount) ;\
+    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), ORANGE_COLOR_CODE(ColorDiscount)); ;\
     GLCall(glDrawElements(GL_TRIANGLE_FAN, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
-#define DrawTriangle_white(ElementBuffer,smallCubeProgram) ;\
-    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), WHITE_COLOR_CODE); ;\
+#define DrawTriangle_white(ElementBuffer,smallCubeProgram,ColorDiscount) ;\
+    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), WHITE_COLOR_CODE(ColorDiscount)); ;\
     GLCall(glDrawElements(GL_TRIANGLE_FAN, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
-#define DrawTriangle_yellow(ElementBuffer,smallCubeProgram) ;\
-    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), YELLOW_COLOR_CODE); ;\
+#define DrawTriangle_yellow(ElementBuffer,smallCubeProgram,ColorDiscount) ;\
+    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), YELLOW_COLOR_CODE(ColorDiscount)); ;\
     GLCall(glDrawElements(GL_TRIANGLE_FAN, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
-#define DrawTriangle_black(ElementBuffer,smallCubeProgram) ;\
-    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), BLACK_COLOR_CODE); ;\
+#define DrawTriangle_black(ElementBuffer,smallCubeProgram,ColorDiscount) ;\
+    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), BLACK_COLOR_CODE(ColorDiscount)); ;\
     GLCall(glDrawElements(GL_TRIANGLE_FAN, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
 #define DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) ;\
-    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), BLACK_COLOR_CODE); ;\
+    glUniform4f(glGetUniformLocation(smallCubeProgram.GetProgram(), "uniColor"), BLACK_COLOR_CODE(0)); ;\
     glLineWidth((GLfloat)10); ;\
     GLCall(glDrawElements(GL_LINE_LOOP, ElementBuffer.GetCount(), GL_UNSIGNED_INT, 0));
 
-#define PainterMachine(ElementBuffer,FaceColor,smallCubeProgram,LineWidth) ;\
+#define PainterMachine(ElementBuffer,FaceColor,smallCubeProgram,LineWidth,ColorDiscount) ;\
     ElementBuffer.Bind() ;\
-    if( FaceColor == Colors::red     ) { DrawTriangle_red(ElementBuffer,smallCubeProgram) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
-    if( FaceColor == Colors::green   ) { DrawTriangle_green(ElementBuffer,smallCubeProgram) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
-    if( FaceColor == Colors::blue    ) { DrawTriangle_blue(ElementBuffer,smallCubeProgram) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
-    if( FaceColor == Colors::yellow  ) { DrawTriangle_yellow(ElementBuffer,smallCubeProgram) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
-    if( FaceColor == Colors::orange  ) { DrawTriangle_orange(ElementBuffer,smallCubeProgram) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
-    if( FaceColor == Colors::white   ) { DrawTriangle_white(ElementBuffer,smallCubeProgram) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
-    if( FaceColor == Colors::black   ) { DrawTriangle_black(ElementBuffer,smallCubeProgram) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
+    if( FaceColor == Colors::red     ) { DrawTriangle_red(ElementBuffer,smallCubeProgram,ColorDiscount) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
+    if( FaceColor == Colors::green   ) { DrawTriangle_green(ElementBuffer,smallCubeProgram,ColorDiscount) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
+    if( FaceColor == Colors::blue    ) { DrawTriangle_blue(ElementBuffer,smallCubeProgram,ColorDiscount) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
+    if( FaceColor == Colors::yellow  ) { DrawTriangle_yellow(ElementBuffer,smallCubeProgram,ColorDiscount) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
+    if( FaceColor == Colors::orange  ) { DrawTriangle_orange(ElementBuffer,smallCubeProgram,ColorDiscount) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
+    if( FaceColor == Colors::white   ) { DrawTriangle_white(ElementBuffer,smallCubeProgram,ColorDiscount) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
+    if( FaceColor == Colors::black   ) { DrawTriangle_black(ElementBuffer,smallCubeProgram,ColorDiscount) DrawBorder(ElementBuffer,smallCubeProgram,LineWidth) } ;\
     ElementBuffer.UnBind();
 
-#define PAINTER(face_ebos,faceColors,smallCubeProgram, LineWidth);\
-    PainterMachine(face_ebos.backFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth);\
-    PainterMachine(face_ebos.frontFace, faceColors.ColorFrontFace, smallCubeProgram, LineWidth);\
-    PainterMachine(face_ebos.rightFace, faceColors.ColorRightFace, smallCubeProgram, LineWidth);\
-    PainterMachine(face_ebos.leftFace, faceColors.ColorLeftFace, smallCubeProgram, LineWidth);\
-    PainterMachine(face_ebos.upFace, faceColors.ColorUpFace, smallCubeProgram, LineWidth);\
-    PainterMachine(face_ebos.downFace, faceColors.ColorDownFace, smallCubeProgram, LineWidth)
-
+#define PAINTER(face_ebos,faceColors,smallCubeProgram, LineWidth, ColorDiscount);\
+    PainterMachine(face_ebos.backFace, faceColors.ColorBackFace, smallCubeProgram, LineWidth, ColorDiscount);\
+    PainterMachine(face_ebos.frontFace, faceColors.ColorFrontFace, smallCubeProgram, LineWidth, ColorDiscount);\
+    PainterMachine(face_ebos.rightFace, faceColors.ColorRightFace, smallCubeProgram, LineWidth, ColorDiscount);\
+    PainterMachine(face_ebos.leftFace, faceColors.ColorLeftFace, smallCubeProgram, LineWidth, ColorDiscount);\
+    PainterMachine(face_ebos.upFace, faceColors.ColorUpFace, smallCubeProgram, LineWidth, ColorDiscount);\
+    PainterMachine(face_ebos.downFace, faceColors.ColorDownFace, smallCubeProgram, LineWidth, ColorDiscount)
 #endif
 
 
@@ -192,7 +197,7 @@ struct SmallCube{
     // Which cube I am drawing and
     // What is the color of the faces of the cube
     float rotation = 0.0f;
-    void Draw(glm::mat4& CameraMatix, GLFWwindow* window, double prevTime)
+    void Draw(glm::mat4& CameraMatix, GLFWwindow* window, double prevTime, bool DRAW_BACK_BUFFER)
     {
         // Bind the shader and Vertex array
         smallCubeProgram.Activate();
@@ -200,17 +205,6 @@ struct SmallCube{
         
         va.Bind();
 
-        // if( faceColors.ColorBackFace == Colors::red     ) { 
-        //     glUniform4f(loc, RED_COLOR_CODE);
-        //     GLCall(glDrawElements(GL_TRIANGLE_FAN, face_ebos.backFace.GetCount(), GL_UNSIGNED_INT, 0));
-        //     //DrawBorder(ElementBuffer,smallCubeProgram,LineWidth); 
-        //     } 
-
-        // if( faceColors.ColorBackFace == Colors::black     ) { 
-        //     glUniform4f(loc, BLACK_COLOR_CODE);
-        //     GLCall(glDrawElements(GL_TRIANGLE_FAN, face_ebos.backFace.GetCount(), GL_UNSIGNED_INT, 0));
-        //     //DrawBorder(ElementBuffer,smallCubeProgram,LineWidth); 
-        //     } 
         modelMatrix = glm::mat4(1.0f);
 
         int modelLoc = glGetUniformLocation(smallCubeProgram.GetProgram(), "model");
@@ -240,11 +234,6 @@ struct SmallCube{
         
         // motion finish
 
-        // multiply final matric with vertices and center coor. of the small cube 
-        // glm::mat4 mo = glm::mat4(1.0f);
-        // mo = glm::rotate(mo, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        // center_coor = mo * center_coor;
-        // center_coor_x = center_coor[0]; center_coor_y = center_coor[1]; center_coor_z = center_coor[2];
 
         // Loading the matrices to the shader
         glm::mat4 test = glm::mat4(1.0f);
@@ -258,7 +247,15 @@ struct SmallCube{
         //COUT << " -- " << ENDL;
 
         // Paints the All faces of the smallCube
-        PAINTER(face_ebos,faceColors,smallCubeProgram, LineWidth)
+        if (DRAW_BACK_BUFFER)
+        {
+
+            float discount = 1.0*(float)CubeID / 255.0;
+            PAINTER(face_ebos,faceColors,smallCubeProgram, LineWidth, discount);
+        }else{
+            PAINTER(face_ebos,faceColors,smallCubeProgram, LineWidth, 0.0);
+        }
+        
         va.UnBind();
         smallCubeProgram.Deactivate();
     }
@@ -266,7 +263,7 @@ struct SmallCube{
     void GetCenterCoor();
     float GetOffset_x(){return x_offset;}
     float GetOffset_y(){return y_offset;}
-    float GetOffset_z(){return z_offset;}
+    float GetOffset_z(){return z_offset;}   
 
 };
 
@@ -326,8 +323,10 @@ public:
     void Draw(glm::mat4& CameraMatix,GLFWwindow* window, double prevTime);
 
     // void SelectSmallCube(glm::mat4& CameraMatrix, GLFWwindow* window);
-    void SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window);
+    void SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern);
 
+    // Identify the Small Cube via clicked pixel's color
+    int IdentifySmallCube(unsigned char* ClickedPixel);
 };
 
 double map(double value, int inputMin, int inputMax, int outputMin, int outputMax);

@@ -15,6 +15,8 @@
 #include "../include/Texture.hpp"
 #include "../include/Camera.hpp"
 #include "../include/Cube.hpp"
+#include "../include/MouseProperties.hpp"
+
 
 // To take jpg image
 #include "../include/std_image.h"
@@ -30,20 +32,8 @@ const float cube_center_z = 0.0;
 float x_offset = 0.0f;
 float y_offset = 0.0f;
 float z_offset = 0.0f;
-// Vertices coordinates
-// GLfloat cube_vertices[] =
-// { //     COORDINATES     /        COLORS      /   TexCoord  //
-//     // First Cube
-// 	cube_center_x - cubeLen/2, cube_center_y - cubeLen/2,  cube_center_z + cubeLen/2,  1.0f, 0.0f, 0.0f, // 0
-// 	cube_center_x + cubeLen/2, cube_center_y - cubeLen/2,  cube_center_z + cubeLen/2,  1.0f, 0.0f, 0.0f, // 1
-// 	cube_center_x + cubeLen/2, cube_center_y + cubeLen/2,  cube_center_z + cubeLen/2,  1.0f, 0.0f, 0.0f, // 2
-// 	cube_center_x - cubeLen/2, cube_center_y + cubeLen/2,  cube_center_z + cubeLen/2,  1.0f, 0.0f, 0.0f, // 3
-// 	cube_center_x - cubeLen/2, cube_center_y - cubeLen/2,  cube_center_z - cubeLen/2,  0.0f, 1.0f, 0.0f, // 4
-// 	cube_center_x + cubeLen/2, cube_center_y - cubeLen/2,  cube_center_z - cubeLen/2,  0.0f, 1.0f, 0.0f, // 5
-// 	cube_center_x + cubeLen/2, cube_center_y + cubeLen/2,  cube_center_z - cubeLen/2,  0.0f, 1.0f, 0.0f, // 6
-// 	cube_center_x - cubeLen/2, cube_center_y + cubeLen/2,  cube_center_z - cubeLen/2,  0.0f, 1.0f, 0.0f // 7
-//     // Second Cube
-// };
+
+
 GLfloat cube_vertices[] =
 { //     COORDINATES     /        COLORS      /   TexCoord  //
     // First Cube
@@ -57,27 +47,8 @@ GLfloat cube_vertices[] =
 	cube_center_x - cubeLen/2, cube_center_y + cubeLen/2,  cube_center_z - cubeLen/2  // 7
     // Second Cube
 };
+
 // Indices for vertices order
-// GLuint cube_indices[] =
-// {
-// 	0, 1, 2,
-// 	0, 2, 3,
-	
-//     0, 4, 5,
-// 	0, 5, 1,
-
-// 	5, 1, 2,
-// 	2, 5, 6,
-
-// 	3, 7, 2,
-// 	6, 7, 2,
-
-// 	0, 3, 4,
-// 	7, 3, 4,
-
-// 	4, 7, 6,
-// 	4, 6, 5
-// };
 GLuint cube_indices[] =
 {
 	0, 1, 2, 3, // front
@@ -93,8 +64,8 @@ GLuint cube_indices[] =
 	4, 7, 6, 5 // back
 };
 
-
-
+// This variable is defined in MouseProperties.hpp as a EXTERN
+MouseProperties mouseProperties_extern;
 
 int main(void)
 {
@@ -264,6 +235,8 @@ int main(void)
     Cube Cube(cubeLen);
     Cube.Init(textureShader_VR, fragmentShader);
 
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+
     float sinX;
 	// Main while loop
 	while (!glfwWindowShouldClose(window))
@@ -276,8 +249,7 @@ int main(void)
 		glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
 		// Clean the back buffer and assign the new color to it
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// Tell OpenGL which Shader Program we want to use4
-        
+		// Tell OpenGL which Shader Program we want to use
         shader_cube.Activate();
 
         va_cube.Bind();
@@ -346,7 +318,7 @@ int main(void)
         ebo_cube_face_0.Bind();
         // shader_cube.SetUniform4f("uniColor",1.0f, 0.0f, 0.0f, 1.0f);
         
-        shader_cube.SetUniform4f("uniColor",RED_COLOR_CODE);
+        shader_cube.SetUniform4f("uniColor",RED_COLOR_CODE(0));
         // glUniform4f(vertexColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
         GLCall(glDrawElements(GL_TRIANGLE_FAN, ebo_cube_face_0.GetCount(), GL_UNSIGNED_INT, 0));
         glUniform4f(vertexColorLocation, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -365,8 +337,9 @@ int main(void)
         va_cube.UnBind();
         shader_cube.Deactivate();
 
-        Cube.SelectSmallCube(camera.GetCameraView(),camera.GetView(),camera.GetProjection(),window);
-        Cube.Draw(camera.GetCameraView(), window, prevTime);
+        //Cube.Draw(camera.GetCameraView(), window, prevTime);
+        
+        Cube.SelectSmallCube(camera.GetCameraView(),camera.GetView(),camera.GetProjection(),window, mouseProperties_extern);
         
         //display(window, ball, shader_01.GetProgram() ,_array, _array_ele);,
 

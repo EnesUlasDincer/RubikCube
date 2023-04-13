@@ -305,70 +305,378 @@ void Cube::Draw(glm::mat4& CameraMatrix, GLFWwindow* window, double prevTime)
 {
     for (int i = 0; i < n_cubes; i++)
     {
-        smallCubes[i].Draw(CameraMatrix, window, prevTime);
+        smallCubes[i].Draw(CameraMatrix, window, prevTime,false);
     }
 }
 
-void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window)
+void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern)
 {
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-        double mouseX, mouseY;
-        glfwGetCursorPos(window, &mouseX, &mouseY);
-        
-        // Convert mouse coordinates to normalized device coordinates
-        int windowWidth, windowHeight;
-        glfwGetWindowSize(window, &windowWidth, &windowHeight);
-        float ndcX = (2.0f * mouseX) / windowWidth - 1.0f;
-        float ndcY = 1.0f - (2.0f * mouseY) / windowHeight;
+    if (mouseProperties_extern.MOUSE_RIGHT_CLICK) {
 
+        // COUT << "HERE" << ENDL;// Specify the color of the background
+
+        // Render the back buffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        for (int i = 0; i < n_cubes; i++)
+        {
+            smallCubes[i].Draw(CameraMatrix, window, 0.0, true);
+        }
+
+        glFlush(); //forces all drawing commands to be sent to the graphics card and executed immediately.
+
+        // Run this in your main loop since rightnow we have not rendered the back buffer
+        unsigned char ClickedPixel[4];
+        glReadPixels(mouseProperties_extern.ndcMouseX, mouseProperties_extern.ndcMouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, ClickedPixel);
+
+        // vec4_Printer(ClickedPixel);
+        // int R_channel = ClickedPixel[0];
+        // int G_channel = ClickedPixel[1];
+        // int B_channel = ClickedPixel[2];
+
+        int id = IdentifySmallCube(ClickedPixel);
+
+        // Then, create logic map
+        // if (pixel[0]==0 && pixel[1]==255 && pixel[2]==0) std::cout << "First triangle"<<std::endl;
+        // else if (pixel[0]==0 && pixel[1]==0 && pixel[2]==255) std::cout << "Second triangle"<<std::endl;
+        // else std::cout << "None"<<std::endl;
 
         // get the view and projection matrices
         glm::mat4 viewMatrix = ViewMatrix;
         glm::mat4 projectionMatrix = ProjectionMatrix;
 
-        // compute the ray in world space
-        glm::vec4 viewport = glm::vec4(0.0f, 0.0f, (float)windowWidth, (float)windowHeight);
-        glm::vec3 rayWorld = glm::unProject(glm::vec3(ndcX, ndcY, 0.0f), viewMatrix, projectionMatrix, viewport);
-        glm::vec3 rayDir = glm::normalize(glm::unProject(glm::vec3(ndcX, ndcY, 1.0f), viewMatrix, projectionMatrix, viewport) - rayWorld);
+        //
+        //std::map<int, double> CosineSimilarityMap;
+        //// MostSimiliarOne();
+        //for (int i = 0; i < n_cubes; i++)
+        //{
+        //    CosineSimilarityMap.insert(std::make_pair(i,cosine_similarity(rayDir, smallCubes[i].center_coor)));
+        //}
+        //auto max_element = std::max_element(CosineSimilarityMap.begin(), CosineSimilarityMap.end(),[](const auto& pair1, const auto& pair2) {
+        //    return pair1.second < pair2.second;
+        //});
 
-        vec3_Printer(rayDir);
-
-        uint data[3];
-        glReadPixels(ndcX, ndcY, 1, 1, GL_RGB_INTEGER, GL_UNSIGNED_INT, data);
-
-        if (ndcX > 0.1)
-        {
-            COUT << "YSE" << ENDL;
-        }
-        
-        std::map<int, double> CosineSimilarityMap;
-        // MostSimiliarOne();
+        //std::cout << "The key of the biggest element is: " << max_element->first << std::endl;
+    }else{
         for (int i = 0; i < n_cubes; i++)
         {
-            CosineSimilarityMap.insert(std::make_pair(i,cosine_similarity(rayDir, smallCubes[i].center_coor)));
+            smallCubes[i].Draw(CameraMatrix, window, 0.0,false);
         }
-        auto max_element = std::max_element(CosineSimilarityMap.begin(), CosineSimilarityMap.end(),[](const auto& pair1, const auto& pair2) {
-            return pair1.second < pair2.second;
-        });
-
-        std::cout << "The key of the biggest element is: " << max_element->first << std::endl;
-    
-        // Test ray against scene objects
-        // for (Object* obj : sceneObjects) {
-        //     if (obj->intersect(rayOrigin, rayDir)) {
-        //         // Do something with the intersected object
-        //         break;
-        //     }
-        // }
     }
 
 
-
-
-    ///
-
-
 }
+
+int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
+{
+    int R_channel = ClickedPixel[0];
+    int G_channel = ClickedPixel[1];
+    int B_channel = ClickedPixel[2];
+    for (int i = 0; i < n_cubes; i++)
+    {
+        if(smallCubes[i].faceColors.ColorBackFace == Colors::black) // black 0 0 0
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorBackFace == Colors::blue) // blue 0 0 1
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorBackFace == Colors::green) // green 0 1 0
+        {
+            if (R_channel == i + 0 && G_channel == -i + 255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorBackFace == Colors::orange) // orange 1 0.4 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 0.4*255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorBackFace == Colors::red) // red 1 0 0
+        {
+            if (R_channel == -i + 255 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorBackFace == Colors::white) // white 1 1 1
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorBackFace == Colors::yellow) // yellow 1 1 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            {
+                return i;
+            }
+        }
+
+        if(smallCubes[i].faceColors.ColorDownFace == Colors::black) // black 0 0 0
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorDownFace == Colors::blue) // blue 0 0 1
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorDownFace == Colors::green) // green 0 1 0
+        {
+            if (R_channel == i + 0 && G_channel == -i + 255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorDownFace == Colors::orange) // orange 1 0.4 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 0.4*255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorDownFace == Colors::red) // red 1 0 0
+        {
+            if (R_channel == -i + 255 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorDownFace == Colors::white) // white 1 1 1
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorDownFace == Colors::yellow) // yellow 1 1 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            {
+                return i;
+            }
+        }
+        
+        if(smallCubes[i].faceColors.ColorFrontFace == Colors::black) // black 0 0 0
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorFrontFace == Colors::blue) // blue 0 0 1
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorFrontFace == Colors::green) // green 0 1 0
+        {
+            if (R_channel == i + 0 && G_channel == -i + 255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorFrontFace == Colors::orange) // orange 1 0.4 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 0.4*255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorFrontFace == Colors::red) // red 1 0 0
+        {
+            if (R_channel == -i + 255 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorFrontFace == Colors::white) // white 1 1 1
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorFrontFace == Colors::yellow) // yellow 1 1 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            {
+                return i;
+            }
+        }
+        
+        if(smallCubes[i].faceColors.ColorLeftFace == Colors::black) // black 0 0 0
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorLeftFace == Colors::blue) // blue 0 0 1
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorLeftFace == Colors::green) // green 0 1 0
+        {
+            if (R_channel == i + 0 && G_channel == -i + 255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorLeftFace == Colors::orange) // orange 1 0.4 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 0.4*255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorLeftFace == Colors::red) // red 1 0 0
+        {
+            if (R_channel == -i + 255 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorLeftFace == Colors::white) // white 1 1 1
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorLeftFace == Colors::yellow) // yellow 1 1 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            {
+                return i;
+            }
+        }
+        
+        if(smallCubes[i].faceColors.ColorRightFace == Colors::black) // black 0 0 0
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorRightFace == Colors::blue) // blue 0 0 1
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorRightFace == Colors::green) // green 0 1 0
+        {
+            if (R_channel == i + 0 && G_channel == -i + 255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorRightFace == Colors::orange) // orange 1 0.4 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 0.4*255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorRightFace == Colors::red) // red 1 0 0
+        {
+            if (R_channel == -i + 255 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorRightFace == Colors::white) // white 1 1 1
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorRightFace == Colors::yellow) // yellow 1 1 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            {
+                return i;
+            }
+        }
+
+        if(smallCubes[i].faceColors.ColorUpFace == Colors::black) // black 0 0 0
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorUpFace == Colors::blue) // blue 0 0 1
+        {
+            if (R_channel == i + 0 && G_channel == i + 0 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorUpFace == Colors::green) // green 0 1 0
+        {
+            if (R_channel == i + 0 && G_channel == -i + 255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorUpFace == Colors::orange) // orange 1 0.4 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 0.4*255 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorUpFace == Colors::red) // red 1 0 0
+        {
+            if (R_channel == -i + 255 && G_channel == i + 0 && B_channel == i + 0)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorUpFace == Colors::white) // white 1 1 1
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 255)
+            {
+                return i;
+            }
+        }
+        if(smallCubes[i].faceColors.ColorUpFace == Colors::yellow) // yellow 1 1 0
+        {
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            {
+                return i;
+            }
+        }
+
+    }
+    
+}
+
 
 void invertMatrix4x4(glm::mat4 matrixIN, glm::mat4 MatrixOUT) {
     MatrixOUT = glm::inverse(matrixIN);
