@@ -2,7 +2,11 @@
 
 ![Alt text](/ScreenShots/Cube.png?raw=true "Cube")
 
-https://user-images.githubusercontent.com/116571194/230770360-658bf04a-7838-4697-84c5-4428fefe1c1b.mp4
+
+https://user-images.githubusercontent.com/116571194/232038407-9045a224-b739-4974-9be4-09aa6fa8c605.mp4
+
+
+
 
 THe followings is miiisng int the KeyProperties:
     - q,esc, w,a,s,d buttons
