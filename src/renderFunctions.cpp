@@ -173,23 +173,31 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     keyProperties_extern.KEY_6_PRESSED = false;
     keyProperties_extern.KEY_7_PRESSED = false;
     keyProperties_extern.KEY_8_PRESSED = false;
-    if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+    keyProperties_extern.KEY_RESTART_PRESSED = false;
+    keyProperties_extern.KEY_SHUFFLE_PRESSED = false;
+    if (key == GLFW_KEY_KP_2 && action == GLFW_PRESS) {
         keyProperties_extern.KEY_2_PRESSED = true;
     }
-    if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_KP_3 && action == GLFW_PRESS) {
         keyProperties_extern.KEY_3_PRESSED = true;
     }
-    if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_KP_4 && action == GLFW_PRESS) {
         keyProperties_extern.KEY_4_PRESSED = true;
     }
-    if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_KP_6 && action == GLFW_PRESS) {
         keyProperties_extern.KEY_6_PRESSED = true;
     }
-    if (key == GLFW_KEY_7 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_KP_7 && action == GLFW_PRESS) {
         keyProperties_extern.KEY_7_PRESSED = true;
     }
-    if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_KP_8 && action == GLFW_PRESS) {
         keyProperties_extern.KEY_8_PRESSED = true;
+    }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_RESTART_PRESSED = true;
+    }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_SHUFFLE_PRESSED = true;
     }
 }
 

@@ -21,6 +21,7 @@ Cube::Cube(float _cubeLen)
     CUBE_vertices = (GLfloat*)malloc(n_point_in_one_cube * n_faces * n_cubes * vec_count * sizeof(GLfloat));
     CubeShaders = (shaderClass*)malloc(n_cubes * sizeof(shaderClass));
     smallCubes = (SmallCube*)malloc(n_cubes * sizeof(SmallCube));
+    n_move = 10;
 }
 
 void Cube::Init(const::std::string& vertexShader, const::std::string& fragmentShader)
@@ -735,7 +736,13 @@ void Cube::GetKeyword(KeyProperties keyProperties_extern)
     static int state_for_6 = 0;
     BUTTON_MACHINE(keyProperties_extern.KEY_6_PRESSED, rotationWay.Left_2_Right, rotationWay.Identical, state_for_6)
 
+    static int state_for_ReStart = 0;
+    RESTART_DETECTION_MACHINE(keyProperties_extern.KEY_RESTART_PRESSED, state_for_ReStart)
 
+    static int state_for_Shuffle = 0;
+    SHUFFLE_DETECTION_MACHINE(keyProperties_extern.KEY_SHUFFLE_PRESSED, state_for_Shuffle)
+
+    
     if (rotationWay.Back_2_Front == false && rotationWay.Front_2_Back == false && rotationWay.CCW == false && rotationWay.CW == false && rotationWay.Left_2_Right == false && rotationWay.Right_2_Left == false)
     {
         rotationWay.Identical = true;
@@ -743,6 +750,15 @@ void Cube::GetKeyword(KeyProperties keyProperties_extern)
         rotationWay.Identical = false;
     }
     
+    if (state_for_ReStart == 1)
+    {
+        Restart();
+    }
+
+    if (state_for_Shuffle == 1)
+    {
+        Shuffle();
+    }
 }
 
 void Cube::ApplyRotation(glm::mat4& ViewMatrix){
@@ -790,11 +806,13 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
                         smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) *-90.0, AXES_CHOICE);
                     }   
                 }else{
-                        smallCubes[i].ApplyRotation(0.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation(0.0, -1);
                 }
+            }else
+            {
+                smallCubes[i].ApplyRotation(0.0, -1);
             }
         }
-        
     }
     if (rotationWay.Right_2_Left || rotationWay.Left_2_Right)
     {   // SmallCubes that have the same Y component
@@ -821,14 +839,17 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
                 {
                     if (rotationWay.Left_2_Right)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_y[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
                     }else if(rotationWay.Right_2_Left)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_y[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
                     }
                 }else{
-                        smallCubes[i].ApplyRotation(0.0, 1);
+                        smallCubes[i].ApplyRotation(0.0, -1);
                 }
+            }else
+            {
+                smallCubes[i].ApplyRotation(0.0, -1);
             }
         }
     }
@@ -857,24 +878,69 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
                 {
                     if (rotationWay.Back_2_Front)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_x[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
                     }else if(rotationWay.Front_2_Back)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_x[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
                     }
                 }else{
-                        smallCubes[i].ApplyRotation(0.0, 0);
+                        smallCubes[i].ApplyRotation(0.0, -1);
                 }
+            }else
+            {
+                        smallCubes[i].ApplyRotation(0.0, -1);
             }
         }    
     }
+    if (rotationWay.Identical)
+    {
+        for(int i = 0; i < n_cubes; i++)
+        {
+            smallCubes[i].ApplyRotation(0.0, -1);
+        }
+    }
     
+}
+
+void Cube::Restart()
+{
+    for (int i = 0; i < n_cubes; i++)
+    {
+        smallCubes[i].Restart();
+    }
+}
+
+void Cube::Shuffle()
+{
+
+    // seed the random number generator with current time
+    std::srand(std::time(nullptr));
+
+    // generate 10 random numbers between 0 and 5
+    for (int i = 0; i < n_move; ++i) {
+        rotationWay.Back_2_Front = false;
+        rotationWay.Front_2_Back = false;
+        rotationWay.Right_2_Left = false;
+        rotationWay.Left_2_Right = false;
+        rotationWay.CCW = false;
+        rotationWay.CW = false;
+        int random_num = std::rand() % 6; // generate a number between 0 and 5
+        if (random_num == 0){ rotationWay.Back_2_Front = true; }
+        if (random_num == 0){ rotationWay.Front_2_Back = true; }
+        if (random_num == 0){ rotationWay.Right_2_Left = true; }
+        if (random_num == 0){ rotationWay.Left_2_Right = true; }
+        if (random_num == 0){ rotationWay.CCW = true; }
+        if (random_num == 0){ rotationWay.CW = true; }
+    }
+
+
 }
 
 
 void invertMatrix4x4(glm::mat4 matrixIN, glm::mat4 MatrixOUT) {
     MatrixOUT = glm::inverse(matrixIN);
 }
+
 
     
 double map(double value, int inputMin, int inputMax, int outputMin, int outputMax) {

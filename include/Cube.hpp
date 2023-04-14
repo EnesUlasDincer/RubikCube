@@ -13,6 +13,8 @@
 #include <algorithm>
 #include <typeinfo>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 
 #ifndef COLOR_CODES
 #define COLOR_CODES
@@ -33,6 +35,18 @@
     case 0: rotationWay = false; Identical = true; if(Condition){state = 1;}else{state = 0;} break; ;\
     case 1: rotationWay = true;  Identical = false; if(Condition){state = 2;}else{state = 0;} break; ;\
     case 2: rotationWay = false; Identical = true;  if(Condition){state = 2;}else{state = 0;} break; ;\
+    } 
+#define RESTART_DETECTION_MACHINE(Condition, state) ;\
+    switch (state) { ;\
+    case 0: if(Condition){state = 1;}else{state = 0;} break; ;\
+    case 1: if(Condition){state = 2;}else{state = 0;} break; ;\
+    case 2: if(Condition){state = 2;}else{state = 0;} break; ;\
+    } 
+#define SHUFFLE_DETECTION_MACHINE(Condition, state) ;\
+    switch (state) { ;\
+    case 0: if(Condition){state = 1;}else{state = 0;} break; ;\
+    case 1: if(Condition){state = 2;}else{state = 0;} break; ;\
+    case 2: if(Condition){state = 2;}else{state = 0;} break; ;\
     } 
 #endif
 
@@ -210,6 +224,10 @@ struct SmallCube{
         vb.UnBind();
         face_ebos.UnBind();
         smallCubeProgram.Deactivate();
+
+        StaticLikeAngle = 0.0f;
+        StaticLikeAxes = -1;
+        AnimationFlag = false;
     }
 
     // index tells us which cube we are drawing
@@ -285,28 +303,85 @@ struct SmallCube{
         smallCubeProgram.Deactivate();
     }
 
-    //void GetCenterCoor();
-
+    float StaticLikeAngle;
+    int StaticLikeAxes;
+    bool AnimationFlag;
+    // Aplly rotation to the small cube
     void ApplyRotation(float angle, int Axes)
     {
         glm::mat3 RotatioPartnModelMatrix = glm::mat3(modelMatrix);
-        if(Axes == 0) // X axes
+        if (StaticLikeAxes != Axes && StaticLikeAngle != angle && angle != 0.0)
         {
+            StaticLikeAngle = angle;
+        }
+        
+        // Increment the angle 
+        // Feed to glm::rotate
+        float angle_increment = 0.1;
+        if (Axes == -1)
+        {   // No rotation Case
+            
+            float a = StaticLikeAngle;
+            if (abs( abs(rotation + angle_increment) - abs(a) ) > 0.01)
+            {
+                rotation += angle_increment;
+            }else{
+                rotation = 0.0;
+                StaticLikeAngle = 0.0;
+                StaticLikeAxes = -1;
+            }
+            // rotation = fmod(rotation,100);
+            AnimationFlag = false;
+            if (StaticLikeAxes == 0)
+            {
+                AnimationFlag = true;
+                glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
+                axes_x = glm::transpose(RotatioPartnModelMatrix)*axes_x;
+                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_x);
+            }else if(StaticLikeAxes == 1) // Y axes
+            {
+                AnimationFlag = true;
+                glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
+                axes_y = glm::transpose(RotatioPartnModelMatrix)*axes_y;    
+                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_y);
+            }else if(StaticLikeAxes == 2) // Z axes
+            {
+                AnimationFlag = true;
+                glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
+                axes_z = glm::transpose(RotatioPartnModelMatrix)*axes_z;    
+                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_z);
+            }
+            
+
+        }
+        
+        if(Axes == 0 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2) ) // X axes
+        {
+            rotation = 0.0;
+            StaticLikeAxes = 0;
             glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
             axes_x = glm::transpose(RotatioPartnModelMatrix)*axes_x;
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), axes_x);
-        }else if(Axes == 1) // Y axes
+            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_x);
+        }else if(Axes == 1 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2)) // Y axes
         {
+            rotation = 0.0;
+            StaticLikeAxes = 1;
             glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
             axes_y = glm::transpose(RotatioPartnModelMatrix)*axes_y;    
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), axes_y);
-        }else if(Axes == 2) // Z axes
+            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_y);
+        }else if(Axes == 2 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2)) // Z axes
         {
+            rotation = 0.0;
+            StaticLikeAxes = 2;
             glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
             axes_z = glm::transpose(RotatioPartnModelMatrix)*axes_z;    
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), axes_z);
+            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_z);
         }
     }
+
+    // Restart the model matrix as a identity
+    void Restart(){modelMatrix = glm::mat4(1.0f);}
+
 
     glm::vec3 GetCenterCoor(){return glm::vec3(center_coor_x,center_coor_y,center_coor_z);}
     float GetCenterCoor(int x){if (x == 0){return center_coor_x;}else if(x == 1){return center_coor_y;}else if(x == 2){return center_coor_z;}}
@@ -345,7 +420,8 @@ private:
     int SelectedSmallCube;
     // Rotation
     Rotation rotationWay;
-
+    // Number of movement for shuffling
+    int n_move;
 public:
     
     
@@ -385,6 +461,12 @@ public:
     
     // Apply rotation to the smallCubes
     void ApplyRotation(glm::mat4& CameraMatrix);
+
+    // Restart the Cube
+    void Restart();
+
+    // Shuffle the Cube
+    void Shuffle();
 };
 
 double map(double value, int inputMin, int inputMax, int outputMin, int outputMax);
