@@ -309,7 +309,7 @@ void Cube::Draw(glm::mat4& CameraMatrix, GLFWwindow* window, double prevTime)
     }
 }
 
-void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern)
+void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern, KeyProperties keyProperties_extern)
 {
     static bool click = false;
     
@@ -332,9 +332,6 @@ void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::m
         glBindRenderbuffer(GL_RENDERBUFFER, color_rb);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, window_width, window_height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, color_rb);
-
-        
-
 
         // Create depth buffer renderbuffer for FBO
         GLuint depthRenderbuffer;
@@ -364,21 +361,18 @@ void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::m
         unsigned char ClickedPixel[4];
         glBindFramebuffer(GL_FRAMEBUFFER, fbo);
         glReadPixels(mouseProperties_extern.ndcMouseX, mouseProperties_extern.ndcMouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, ClickedPixel);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         
-        int id = IdentifySmallCube(ClickedPixel);
-        COUT << id << ENDL;
+        SelectedSmallCube = IdentifySmallCube(ClickedPixel);
+        COUT << SelectedSmallCube << ENDL;
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+        
 
         // get the view and projection matrices
         glm::mat4 viewMatrix = ViewMatrix;
         glm::mat4 projectionMatrix = ProjectionMatrix;
-
-        /* Check if double buffering is enabled */
-        //GLint double_buffer;
-        //glGetIntegerv(GL_DOUBLEBUFFER, &double_buffer);
-        //bool double_buffering_enabled = (double_buffer == GL_TRUE);
 
         //std::map<int, double> CosineSimilarityMap;
         //// MostSimiliarOne();
@@ -393,6 +387,13 @@ void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::m
         //std::cout << "The key of the biggest element is: " << max_element->first << std::endl;
         
     }
+
+    GetKeyword(keyProperties_extern);
+
+    // Change some of the smallCube's "model" matrix
+
+    ApplyRotation(ViewMatrix);
+
     if(click == false || (click && mouseProperties_extern.MOUSE_RIGHT_CLICK))
     {
         for (int i = 0; i < n_cubes; i++)
@@ -400,12 +401,6 @@ void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::m
             smallCubes[i].Draw(CameraMatrix, window, 0.0,false);
         }
     }
-
-    // for (int i = 0; i < n_cubes; i++)
-    //     {
-    //         smallCubes[i].Draw(CameraMatrix, window, 0.0, false);
-    //     }
-    
 
 }
 
@@ -460,7 +455,7 @@ int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
         }
         if(smallCubes[i].faceColors.ColorBackFace == Colors::yellow) // yellow 1 1 0
         {
-            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == i + 0)
             {
                 return i;
             }
@@ -510,7 +505,7 @@ int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
         }
         if(smallCubes[i].faceColors.ColorDownFace == Colors::yellow) // yellow 1 1 0
         {
-            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == i + 0)
             {
                 return i;
             }
@@ -560,7 +555,7 @@ int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
         }
         if(smallCubes[i].faceColors.ColorFrontFace == Colors::yellow) // yellow 1 1 0
         {
-            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == i + 0)
             {
                 return i;
             }
@@ -610,7 +605,7 @@ int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
         }
         if(smallCubes[i].faceColors.ColorLeftFace == Colors::yellow) // yellow 1 1 0
         {
-            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == i + 0)
             {
                 return i;
             }
@@ -660,7 +655,7 @@ int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
         }
         if(smallCubes[i].faceColors.ColorRightFace == Colors::yellow) // yellow 1 1 0
         {
-            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == i + 0)
             {
                 return i;
             }
@@ -710,7 +705,7 @@ int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
         }
         if(smallCubes[i].faceColors.ColorUpFace == Colors::yellow) // yellow 1 1 0
         {
-            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == -i + 0)
+            if (R_channel == -i + 255 && G_channel == -i + 255 && B_channel == i + 0)
             {
                 return i;
             }
@@ -720,11 +715,168 @@ int Cube::IdentifySmallCube(unsigned char* ClickedPixel)
     
 }
 
+void Cube::GetKeyword(KeyProperties keyProperties_extern)
+{
+    static int state_for_2 = 0;
+    BUTTON_MACHINE(keyProperties_extern.KEY_2_PRESSED, rotationWay.Back_2_Front, rotationWay.Identical, state_for_2)
+
+    static int state_for_8 = 0;
+    BUTTON_MACHINE(keyProperties_extern.KEY_8_PRESSED, rotationWay.Front_2_Back, rotationWay.Identical, state_for_8)
+
+    static int state_for_7 = 0;
+    BUTTON_MACHINE(keyProperties_extern.KEY_7_PRESSED, rotationWay.CCW, rotationWay.Identical, state_for_7)
+
+    static int state_for_3 = 0;
+    BUTTON_MACHINE(keyProperties_extern.KEY_3_PRESSED, rotationWay.CW, rotationWay.Identical, state_for_3)
+
+    static int state_for_4 = 0;
+    BUTTON_MACHINE(keyProperties_extern.KEY_4_PRESSED, rotationWay.Right_2_Left, rotationWay.Identical, state_for_4)
+
+    static int state_for_6 = 0;
+    BUTTON_MACHINE(keyProperties_extern.KEY_6_PRESSED, rotationWay.Left_2_Right, rotationWay.Identical, state_for_6)
+
+
+    if (rotationWay.Back_2_Front == false && rotationWay.Front_2_Back == false && rotationWay.CCW == false && rotationWay.CW == false && rotationWay.Left_2_Right == false && rotationWay.Right_2_Left == false)
+    {
+        rotationWay.Identical = true;
+    }else{
+        rotationWay.Identical = false;
+    }
+    
+}
+
+void Cube::ApplyRotation(glm::mat4& ViewMatrix){
+    float tolerance = 0.001;
+    // The coordinates of the selected cube
+    glm::vec3 selectedCenterCoor = smallCubes[SelectedSmallCube].GetCenterCoor();
+    float selectedCenterCoor_axes;
+    int AXES_CHOICE;
+
+    glm::mat3 RotatioPartnViewMatrix = glm::mat3(ViewMatrix);
+    glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
+    glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    // Find the other small cubes in the rotation way (aka roation plane)
+    if (rotationWay.CCW || rotationWay.CW)
+    {   // SmallCubes that have the same Z component
+        axes_z = glm::transpose(RotatioPartnViewMatrix)*axes_z;
+        if ((abs(axes_z[0]) > abs(axes_z[1])) && (abs(axes_z[0]) > abs(axes_z[2])) )
+        {
+            // world x axes
+            AXES_CHOICE = 0;
+        }
+        else if ((abs(axes_z[1]) > abs(axes_z[0])) && (abs(axes_z[1]) > abs(axes_z[2])) )
+        {
+            // world y axes
+            AXES_CHOICE = 1;
+        }else if ((abs(axes_z[2]) > abs(axes_z[0])) && (abs(axes_z[2]) > abs(axes_z[0])) )
+        {
+            // world z axes
+            AXES_CHOICE = 2;
+        }
+
+        for (int i = 0; i < n_cubes; i++)
+        {
+            if(abs(selectedCenterCoor[AXES_CHOICE] - smallCubes[i].GetCenterCoor(AXES_CHOICE)) < tolerance)
+            {
+                // smallCubes[i].ApplyRotation(00.0, 2);
+                if (!rotationWay.Identical)
+                {
+                    if (rotationWay.CCW)
+                    {
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                    }else if(rotationWay.CW){
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) *-90.0, AXES_CHOICE);
+                    }   
+                }else{
+                        smallCubes[i].ApplyRotation(0.0, AXES_CHOICE);
+                }
+            }
+        }
+        
+    }
+    if (rotationWay.Right_2_Left || rotationWay.Left_2_Right)
+    {   // SmallCubes that have the same Y component
+        axes_y = glm::transpose(RotatioPartnViewMatrix)*axes_y;
+        if ((abs(axes_y[0]) > abs(axes_y[1])) && (abs(axes_y[0]) > abs(axes_y[2])) )
+        {
+            // world x axes
+            AXES_CHOICE = 0;
+        }
+        else if ((abs(axes_y[1]) > abs(axes_y[0])) && (abs(axes_y[1]) > abs(axes_y[2])) )
+        {
+            // world y axes
+            AXES_CHOICE = 1;
+        }else if ((abs(axes_y[2]) > abs(axes_y[0])) && (abs(axes_y[2]) > abs(axes_y[0])) )
+        {
+            // world z axes
+            AXES_CHOICE = 2;
+        }
+        for (int i = 0; i < n_cubes; i++)
+        {
+            if(abs(selectedCenterCoor[AXES_CHOICE] - smallCubes[i].GetCenterCoor(AXES_CHOICE)) < tolerance)
+            {
+                if (!rotationWay.Identical)
+                {
+                    if (rotationWay.Left_2_Right)
+                    {
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                    }else if(rotationWay.Right_2_Left)
+                    {
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
+                    }
+                }else{
+                        smallCubes[i].ApplyRotation(0.0, 1);
+                }
+            }
+        }
+    }
+    if (rotationWay.Back_2_Front || rotationWay.Front_2_Back)
+    {   // SmallCubes that have the same X component
+        axes_x = glm::transpose(RotatioPartnViewMatrix)*axes_x;
+        if ((abs(axes_x[0]) > abs(axes_x[1])) && (abs(axes_x[0]) > abs(axes_x[2])) )
+        {
+            // world x axes
+            AXES_CHOICE = 0;
+        }
+        else if ((abs(axes_x[1]) > abs(axes_x[0])) && (abs(axes_x[1]) > abs(axes_x[2])) )
+        {
+            // world y axes
+            AXES_CHOICE = 1;
+        }else if ((abs(axes_x[2]) > abs(axes_x[0])) && (abs(axes_x[2]) > abs(axes_x[0])) )
+        {
+            // world z axes
+            AXES_CHOICE = 2;
+        }
+        for (int i = 0; i < n_cubes; i++)
+        {
+            if(abs(selectedCenterCoor[AXES_CHOICE] - smallCubes[i].GetCenterCoor(AXES_CHOICE)) < tolerance)
+            {
+                if (!rotationWay.Identical)
+                {
+                    if (rotationWay.Back_2_Front)
+                    {
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                    }else if(rotationWay.Front_2_Back)
+                    {
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
+                    }
+                }else{
+                        smallCubes[i].ApplyRotation(0.0, 0);
+                }
+            }
+        }    
+    }
+    
+}
+
 
 void invertMatrix4x4(glm::mat4 matrixIN, glm::mat4 MatrixOUT) {
     MatrixOUT = glm::inverse(matrixIN);
 }
 
+    
 double map(double value, int inputMin, int inputMax, int outputMin, int outputMax) {
     // Calculate the range of the input and output values
     int inputRange = inputMax - inputMin;

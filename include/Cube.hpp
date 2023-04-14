@@ -6,6 +6,7 @@
 #include "ElementBuffer.hpp"
 #include "Camera.hpp"
 #include "MouseProperties.hpp"
+#include "KeyProperties.hpp"
 
 
 #include <map>
@@ -22,10 +23,19 @@
 #define ORANGE_COLOR_CODE(x)   abs(1.0f-x), abs(0.4f-x), abs(0.0f-x), 1.0f
 #define WHITE_COLOR_CODE(x)    abs(1.0f-x), abs(1.0f-x), abs(1.0f-x), 1.0f
 #define BLACK_COLOR_CODE(x)    abs(0.0f-x), abs(0.0f-x), abs(0.0f-x), 1.0f
+#endif
 
 #define bas(x)      abs(1.0f-x)
 
+#ifndef BUTTON_MACHINE
+#define BUTTON_MACHINE(Condition, rotationWay, Identical,state) ;\
+    switch (state) { ;\
+    case 0: rotationWay = false; Identical = true; if(Condition){state = 1;}else{state = 0;} break; ;\
+    case 1: rotationWay = true;  Identical = false; if(Condition){state = 2;}else{state = 0;} break; ;\
+    case 2: rotationWay = false; Identical = true;  if(Condition){state = 2;}else{state = 0;} break; ;\
+    } 
 #endif
+
 
 enum Colors
 {
@@ -35,8 +45,6 @@ enum Colors
 const float LineWidth = 10.0f;
 
 #ifndef PainterMachine
-
-
 // For the record, This is for some reason doesnot work 
 // It is ralted with "uniColor"
 // #define DrawTriangle_blue(ElementBuffer,smallCubeProgram) ;\
@@ -102,6 +110,19 @@ const float LineWidth = 10.0f;
     PainterMachine(face_ebos.downFace, faceColors.ColorDownFace, smallCubeProgram, LineWidth, ColorDiscount)
 #endif
 
+struct Rotation
+{
+    bool Left_2_Right;
+    bool Right_2_Left;
+
+    bool CW;  // ClockWise
+    bool CCW; // CounterClockWise
+
+    bool Front_2_Back;
+    bool Back_2_Front;
+
+    bool Identical;
+};
 
 struct FaceColor
 {
@@ -162,11 +183,13 @@ struct SmallCube{
     GLfloat vertices[24];
     GLuint indices[24];
 
-    glm::mat4 modelMatrix = glm::mat4(1.0f);
+    glm::mat4 modelMatrix;
 
     // Configure the program, vertex array, vertex buffer and element buffer
     void Config()
     {
+        modelMatrix = glm::mat4(1.0f);
+
         smallCubeProgram.Activate();
         va.Config();
         vb.Config(vertices, sizeof(vertices));
@@ -205,32 +228,31 @@ struct SmallCube{
         
         va.Bind();
 
-        modelMatrix = glm::mat4(1.0f);
-
+        // modelMatrix = glm::mat4(1.0f);
+        // printMatrix(modelMatrix);
+        
         int modelLoc = glGetUniformLocation(smallCubeProgram.GetProgram(), "model");
         int camLoc = glGetUniformLocation(smallCubeProgram.GetProgram(), "camMatrix");
 
-
-
         // motion start
 
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-	    {
-            double crntTime = glfwGetTime();
-            if (crntTime - prevTime >= 1 / 60)
-            {
-                rotation += 0.5f;
-                prevTime = crntTime;
-            }
-            // if(abs(rotation) > 90.0f)
-                // rotation = 0.0f;
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+        // if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	    // {
+        //     double crntTime = glfwGetTime();
+        //     if (crntTime - prevTime >= 1 / 60)
+        //     {
+        //         rotation += 0.5f;
+        //         prevTime = crntTime;
+        //     }
+        //     // if(abs(rotation) > 90.0f)
+        //         // rotation = 0.0f;
+        //     modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
             
-            //modelMatrix = glm::translate(modelMatrix, glm::vec3( sin(glm::radians(rotation)) * CubeLen*sqrt(2), 0.0f , -sin(glm::radians(rotation)) * CubeLen*sqrt(2) ));
-	    }else{
-            //rotation = 0.0f;
-            modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-        }
+        //     //modelMatrix = glm::translate(modelMatrix, glm::vec3( sin(glm::radians(rotation)) * CubeLen*sqrt(2), 0.0f , -sin(glm::radians(rotation)) * CubeLen*sqrt(2) ));
+	    // }else{
+        //     //rotation = 0.0f;
+        //     modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
+        // }
         
         // motion finish
 
@@ -241,15 +263,18 @@ struct SmallCube{
         GLCall(glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
         GLCall(glUniformMatrix4fv(camLoc, 1, GL_FALSE, glm::value_ptr(CameraMatix)));
 
-        glm::vec4 test_vec = CameraMatix * modelMatrix * center_coor;
+        glm::vec4 test_vec =  modelMatrix * center_coor;
+        center_coor_x = test_vec[0];
+        center_coor_y = test_vec[1];
+        center_coor_z = test_vec[2];
         //vec4_Printer(center_coor);
         //vec4_Printer(test_vec);
+
         //COUT << " -- " << ENDL;
 
         // Paints the All faces of the smallCube
         if (DRAW_BACK_BUFFER)
         {
-
             float discount = 1.0*(float)CubeID / 255.0;
             PAINTER(face_ebos,faceColors,smallCubeProgram, LineWidth, discount);
         }else{
@@ -260,7 +285,31 @@ struct SmallCube{
         smallCubeProgram.Deactivate();
     }
 
-    void GetCenterCoor();
+    //void GetCenterCoor();
+
+    void ApplyRotation(float angle, int Axes)
+    {
+        glm::mat3 RotatioPartnModelMatrix = glm::mat3(modelMatrix);
+        if(Axes == 0) // X axes
+        {
+            glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
+            axes_x = glm::transpose(RotatioPartnModelMatrix)*axes_x;
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), axes_x);
+        }else if(Axes == 1) // Y axes
+        {
+            glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
+            axes_y = glm::transpose(RotatioPartnModelMatrix)*axes_y;    
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), axes_y);
+        }else if(Axes == 2) // Z axes
+        {
+            glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
+            axes_z = glm::transpose(RotatioPartnModelMatrix)*axes_z;    
+            modelMatrix = glm::rotate(modelMatrix, glm::radians(angle), axes_z);
+        }
+    }
+
+    glm::vec3 GetCenterCoor(){return glm::vec3(center_coor_x,center_coor_y,center_coor_z);}
+    float GetCenterCoor(int x){if (x == 0){return center_coor_x;}else if(x == 1){return center_coor_y;}else if(x == 2){return center_coor_z;}}
     float GetOffset_x(){return x_offset;}
     float GetOffset_y(){return y_offset;}
     float GetOffset_z(){return z_offset;}   
@@ -285,11 +334,17 @@ private:
     // Cube length
     float cubeLen; 
 
+    // Small cube array
     SmallCube* smallCubes;
-
-
+    // Cube vertices
     GLfloat* CUBE_vertices;
+    // Shaders for small cubes
     shaderClass* CubeShaders;
+
+    // Selected Small Cube
+    int SelectedSmallCube;
+    // Rotation
+    Rotation rotationWay;
 
 public:
     
@@ -320,13 +375,19 @@ public:
     void Draw(glm::mat4& CameraMatix,GLFWwindow* window, double prevTime);
 
     // void SelectSmallCube(glm::mat4& CameraMatrix, GLFWwindow* window);
-    void SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern);
+    void SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern, KeyProperties keyProperties_extern);
 
     // Identify the Small Cube via clicked pixel's color
     int IdentifySmallCube(unsigned char* ClickedPixel);
+
+    // Get the keyword and decide the rotation
+    void GetKeyword(KeyProperties keyProperties_extern);
+    
+    // Apply rotation to the smallCubes
+    void ApplyRotation(glm::mat4& CameraMatrix);
 };
 
 double map(double value, int inputMin, int inputMax, int outputMin, int outputMax);
 void invertMatrix4x4(glm::mat4 matrixIN, glm::mat4 MatrixOUT);
 double cosine_similarity(glm::vec3 RayDir, glm::vec4 SmallCubeCenter);
-// void printMatrix(const glm::mat4& matrix);
+void printMatrix(const glm::mat4& matrix);

@@ -1,5 +1,6 @@
 #include "../include/renderFunctions.hpp"
 #include "../include/MouseProperties.hpp"
+#include "../include/KeyProperties.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int heigth)
 {
@@ -148,14 +149,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         // MOUSE_RIGHT_CLICK implies there is a mouse click occured.
         mouseProperties_extern.MOUSE_RIGHT_CLICK = true;
         
-        // //glDrawBuffer(GL_BACK); //back buffer is default thus no need
-        
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        // Do rendering part in specific object!!
-
-    
-        
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
         
@@ -171,3 +164,32 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
     
 }
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    keyProperties_extern.KEY_2_PRESSED = false;
+    keyProperties_extern.KEY_3_PRESSED = false;
+    keyProperties_extern.KEY_4_PRESSED = false;
+    keyProperties_extern.KEY_6_PRESSED = false;
+    keyProperties_extern.KEY_7_PRESSED = false;
+    keyProperties_extern.KEY_8_PRESSED = false;
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_2_PRESSED = true;
+    }
+    if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_3_PRESSED = true;
+    }
+    if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_4_PRESSED = true;
+    }
+    if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_6_PRESSED = true;
+    }
+    if (key == GLFW_KEY_7 && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_7_PRESSED = true;
+    }
+    if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
+        keyProperties_extern.KEY_8_PRESSED = true;
+    }
+}
+

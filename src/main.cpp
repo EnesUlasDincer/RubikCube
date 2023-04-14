@@ -16,6 +16,7 @@
 #include "../include/Camera.hpp"
 #include "../include/Cube.hpp"
 #include "../include/MouseProperties.hpp"
+#include "../include/KeyProperties.hpp"
 
 
 // To take jpg image
@@ -66,6 +67,8 @@ GLuint cube_indices[] =
 
 // This variable is defined in MouseProperties.hpp as a EXTERN
 MouseProperties mouseProperties_extern;
+// This variable is defined in KeyProperties.hpp as a EXTERN
+KeyProperties keyProperties_extern;
 
 int main(void)
 {
@@ -239,6 +242,7 @@ int main(void)
     Cube.Init(textureShader_VR, fragmentShader);
 
     glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetKeyCallback(window, key_callback);
 
     float sinX;
     double frameRate = 120, currentTime, previousTime = 0.0;
@@ -347,7 +351,7 @@ int main(void)
         previousTime = currentTime;
         // update();
         }
-        Cube.SelectSmallCube(camera.GetCameraView(),camera.GetView(),camera.GetProjection(),window, mouseProperties_extern);
+        Cube.SelectSmallCube(camera.GetCameraView(),camera.GetView(),camera.GetProjection(),window, mouseProperties_extern, keyProperties_extern);
         
         //display(window, ball, shader_01.GetProgram() ,_array, _array_ele);,
 
