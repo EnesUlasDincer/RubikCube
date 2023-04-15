@@ -49,6 +49,8 @@ void Cube::Init(const::std::string& vertexShader, const::std::string& fragmentSh
     // Set the vertices of each cube
     SetVertices();
 
+    // Set possible positions
+    SetPossiblePositions();
 }
 
 void Cube::SetVertices()
@@ -740,6 +742,8 @@ void Cube::GetKeyword(KeyProperties keyProperties_extern)
     RESTART_DETECTION_MACHINE(keyProperties_extern.KEY_RESTART_PRESSED, state_for_ReStart)
 
     static int state_for_Shuffle = 0;
+    static bool shuffleFlag = false;
+    static int n_move_counter = 0;
     SHUFFLE_DETECTION_MACHINE(keyProperties_extern.KEY_SHUFFLE_PRESSED, state_for_Shuffle)
 
     
@@ -750,14 +754,24 @@ void Cube::GetKeyword(KeyProperties keyProperties_extern)
         rotationWay.Identical = false;
     }
     
-    if (state_for_ReStart == 1)
+    if (state_for_ReStart == 1 && IsRotating() == 0)
     {
         Restart();
     }
 
-    if (state_for_Shuffle == 1)
+    if (state_for_Shuffle == 1 || (shuffleFlag && state_for_Shuffle == 0))
     {
-        Shuffle();
+        shuffleFlag = true;
+        if (IsRotating() == 0)
+        {
+            Shuffle();
+            n_move_counter++;
+        }
+        if (n_move_counter == n_move)
+        {
+            shuffleFlag = false;
+            n_move_counter = 0;
+        }
     }
 }
 
@@ -772,6 +786,8 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
     glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
     glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
+
+    bool _IsRotating = IsRotating();
 
     // Find the other small cubes in the rotation way (aka roation plane)
     if (rotationWay.CCW || rotationWay.CW)
@@ -801,16 +817,16 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
                 {
                     if (rotationWay.CCW)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE, _IsRotating);
                     }else if(rotationWay.CW){
-                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) *-90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_z[AXES_CHOICE]) ? -1 : 1) *-90.0, AXES_CHOICE, _IsRotating);
                     }   
                 }else{
-                        smallCubes[i].ApplyRotation(0.0, -1);
+                        smallCubes[i].ApplyRotation(0.0, -1, _IsRotating);
                 }
             }else
             {
-                smallCubes[i].ApplyRotation(0.0, -1);
+                smallCubes[i].ApplyRotation(0.0, -1, _IsRotating);
             }
         }
     }
@@ -839,17 +855,17 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
                 {
                     if (rotationWay.Left_2_Right)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_y[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_y[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE, _IsRotating);
                     }else if(rotationWay.Right_2_Left)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_y[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_y[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE, _IsRotating);
                     }
                 }else{
-                        smallCubes[i].ApplyRotation(0.0, -1);
+                        smallCubes[i].ApplyRotation(0.0, -1, _IsRotating);
                 }
             }else
             {
-                smallCubes[i].ApplyRotation(0.0, -1);
+                smallCubes[i].ApplyRotation(0.0, -1, _IsRotating);
             }
         }
     }
@@ -878,17 +894,17 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
                 {
                     if (rotationWay.Back_2_Front)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_x[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_x[AXES_CHOICE]) ? -1 : 1) * 90.0, AXES_CHOICE, _IsRotating);
                     }else if(rotationWay.Front_2_Back)
                     {
-                        smallCubes[i].ApplyRotation((std::signbit(axes_x[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE);
+                        smallCubes[i].ApplyRotation((std::signbit(axes_x[AXES_CHOICE]) ? -1 : 1) * -90.0, AXES_CHOICE, _IsRotating);
                     }
                 }else{
-                        smallCubes[i].ApplyRotation(0.0, -1);
+                        smallCubes[i].ApplyRotation(0.0, -1, _IsRotating);
                 }
             }else
             {
-                        smallCubes[i].ApplyRotation(0.0, -1);
+                        smallCubes[i].ApplyRotation(0.0, -1, _IsRotating);
             }
         }    
     }
@@ -896,7 +912,7 @@ void Cube::ApplyRotation(glm::mat4& ViewMatrix){
     {
         for(int i = 0; i < n_cubes; i++)
         {
-            smallCubes[i].ApplyRotation(0.0, -1);
+            smallCubes[i].ApplyRotation(0.0, -1, _IsRotating);
         }
     }
     
@@ -912,36 +928,84 @@ void Cube::Restart()
 
 void Cube::Shuffle()
 {
+    static int oldRandomRotation;
+    static int oldRandomCube;
 
     // seed the random number generator with current time
     std::srand(std::time(nullptr));
+    int random_Cube = std::rand() % n_cubes;
+    SelectedSmallCube = random_Cube;
 
-    // generate 10 random numbers between 0 and 5
-    for (int i = 0; i < n_move; ++i) {
-        rotationWay.Back_2_Front = false;
-        rotationWay.Front_2_Back = false;
-        rotationWay.Right_2_Left = false;
-        rotationWay.Left_2_Right = false;
-        rotationWay.CCW = false;
-        rotationWay.CW = false;
-        int random_num = std::rand() % 6; // generate a number between 0 and 5
-        if (random_num == 0){ rotationWay.Back_2_Front = true; }
-        if (random_num == 0){ rotationWay.Front_2_Back = true; }
-        if (random_num == 0){ rotationWay.Right_2_Left = true; }
-        if (random_num == 0){ rotationWay.Left_2_Right = true; }
-        if (random_num == 0){ rotationWay.CCW = true; }
-        if (random_num == 0){ rotationWay.CW = true; }
+    if (SelectedSmallCube == oldRandomCube)
+    {   // To see differnet rotation
+        random_Cube = std::rand() % n_cubes;
     }
+    SelectedSmallCube = random_Cube;
+    oldRandomCube = SelectedSmallCube;
 
 
+    rotationWay.Back_2_Front = false;
+    rotationWay.Front_2_Back = false;
+    rotationWay.Right_2_Left = false;
+    rotationWay.Left_2_Right = false;
+    rotationWay.CCW = false;
+    rotationWay.CW = false;
+    rotationWay.Identical = false;
+    int randomRotation = std::rand() % 6; // generate a number between 0 and 5
+
+    if (randomRotation == oldRandomRotation)
+    {   // To see differnet rotation
+        randomRotation = std::rand() % 6; // generate a number between 0 and 5
+    }
+    
+    oldRandomRotation = randomRotation;
+
+    if (randomRotation == 0){ rotationWay.Back_2_Front = true; }
+    if (randomRotation == 1){ rotationWay.Front_2_Back = true; }
+    if (randomRotation == 2){ rotationWay.Right_2_Left = true; }
+    if (randomRotation == 3){ rotationWay.Left_2_Right = true; }
+    if (randomRotation == 4){ rotationWay.CCW = true; }
+    if (randomRotation == 5){ rotationWay.CW = true; }
 }
 
+void Cube::SetPossiblePositions()
+{
+    PossiblePositions[0] = 0.0;     PossiblePositions[1] = 0.0;      PossiblePositions[2] = 0.0; 
+    PossiblePositions[3] = cubeLen; PossiblePositions[4] = 0.0;      PossiblePositions[5] = 0.0; 
+    PossiblePositions[6] = 0.0;     PossiblePositions[7] = cubeLen;  PossiblePositions[8] = 0.0; 
+    PossiblePositions[9] = 0.0;     PossiblePositions[10] = 0.0;     PossiblePositions[11] = cubeLen; 
+
+    PossiblePositions[12] = cubeLen; PossiblePositions[13] = cubeLen; PossiblePositions[14] = 0.0; 
+    PossiblePositions[15] = 0.0;     PossiblePositions[16] = cubeLen; PossiblePositions[17] = cubeLen; 
+    PossiblePositions[18] = cubeLen; PossiblePositions[19] = 0.0;     PossiblePositions[20] = cubeLen; 
+    PossiblePositions[21] = cubeLen; PossiblePositions[22] = cubeLen; PossiblePositions[23] = cubeLen; 
+}
+
+bool Cube::IsRotating()
+{
+    float tolerance = 0.001;
+    for (int i = 0; i < n_cubes; i++)
+    {
+        int count = 0;
+        for (int j = 0; j < 8; j++)
+        {
+            if (abs(abs(smallCubes[i].center_coor_x) - PossiblePositions[3*j]) < tolerance && abs(abs(smallCubes[i].center_coor_y) - PossiblePositions[3*j + 1]) < tolerance && abs(abs(smallCubes[i].center_coor_z) - PossiblePositions[3*j+2]) < tolerance)
+            {
+                count++;
+            }
+        }
+        if (count == 0)
+        {
+            return true; // Cube is rotating
+        }
+    }
+    return false; // Cube is NOT rotating
+    
+}
 
 void invertMatrix4x4(glm::mat4 matrixIN, glm::mat4 MatrixOUT) {
     MatrixOUT = glm::inverse(matrixIN);
 }
-
-
     
 double map(double value, int inputMin, int inputMax, int outputMin, int outputMax) {
     // Calculate the range of the input and output values

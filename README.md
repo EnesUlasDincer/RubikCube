@@ -29,6 +29,7 @@ Now You can rotate the cube with buttons
 - There is a need for info game 
 - Make the rotations by animation - DONE
 - Add 'R' key button to restart the cube position - DONE
-- Add 'S' key button to shuffle the cube
+- While cube is rotating do not interrupt !! - DONE
+- Add 'S' key button to shuffle the cube - DONE
 - Maybe, after solving the cube we can output "Congrats message..."
 

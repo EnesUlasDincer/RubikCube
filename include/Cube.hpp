@@ -227,7 +227,6 @@ struct SmallCube{
 
         StaticLikeAngle = 0.0f;
         StaticLikeAxes = -1;
-        AnimationFlag = false;
     }
 
     // index tells us which cube we are drawing
@@ -252,32 +251,7 @@ struct SmallCube{
         int modelLoc = glGetUniformLocation(smallCubeProgram.GetProgram(), "model");
         int camLoc = glGetUniformLocation(smallCubeProgram.GetProgram(), "camMatrix");
 
-        // motion start
-
-        // if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-	    // {
-        //     double crntTime = glfwGetTime();
-        //     if (crntTime - prevTime >= 1 / 60)
-        //     {
-        //         rotation += 0.5f;
-        //         prevTime = crntTime;
-        //     }
-        //     // if(abs(rotation) > 90.0f)
-        //         // rotation = 0.0f;
-        //     modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-            
-        //     //modelMatrix = glm::translate(modelMatrix, glm::vec3( sin(glm::radians(rotation)) * CubeLen*sqrt(2), 0.0f , -sin(glm::radians(rotation)) * CubeLen*sqrt(2) ));
-	    // }else{
-        //     //rotation = 0.0f;
-        //     modelMatrix = glm::rotate(modelMatrix, glm::radians(rotation), glm::vec3(0.0f, 1.0f, 0.0f));
-        // }
-        
-        // motion finish
-
-
         // Loading the matrices to the shader
-        glm::mat4 test = glm::mat4(1.0f);
-        // GLCall(glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(test)));
         GLCall(glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix)));
         GLCall(glUniformMatrix4fv(camLoc, 1, GL_FALSE, glm::value_ptr(CameraMatix)));
 
@@ -305,77 +279,70 @@ struct SmallCube{
 
     float StaticLikeAngle;
     int StaticLikeAxes;
-    bool AnimationFlag;
     // Aplly rotation to the small cube
-    void ApplyRotation(float angle, int Axes)
+    void ApplyRotation(float angle, int Axes, bool IsRotating)
     {
         glm::mat3 RotatioPartnModelMatrix = glm::mat3(modelMatrix);
-        if (StaticLikeAxes != Axes && StaticLikeAngle != angle && angle != 0.0)
-        {
-            StaticLikeAngle = angle;
-        }
         
         // Increment the angle 
-        // Feed to glm::rotate
-        float angle_increment = 0.1;
-        if (Axes == -1)
-        {   // No rotation Case
-            
-            float a = StaticLikeAngle;
-            if (abs( abs(rotation + angle_increment) - abs(a) ) > 0.01)
-            {
-                rotation += angle_increment;
-            }else{
-                rotation = 0.0;
-                StaticLikeAngle = 0.0;
-                StaticLikeAxes = -1;
-            }
-            // rotation = fmod(rotation,100);
-            AnimationFlag = false;
-            if (StaticLikeAxes == 0)
-            {
-                AnimationFlag = true;
-                glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
-                axes_x = glm::transpose(RotatioPartnModelMatrix)*axes_x;
-                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_x);
-            }else if(StaticLikeAxes == 1) // Y axes
-            {
-                AnimationFlag = true;
-                glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
-                axes_y = glm::transpose(RotatioPartnModelMatrix)*axes_y;    
-                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_y);
-            }else if(StaticLikeAxes == 2) // Z axes
-            {
-                AnimationFlag = true;
-                glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
-                axes_z = glm::transpose(RotatioPartnModelMatrix)*axes_z;    
-                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_z);
-            }
-            
-
-        }
+        float angle_increment = 2.5;
         
-        if(Axes == 0 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2) ) // X axes
+        float a = StaticLikeAngle;
+        if (abs( abs(rotation + angle_increment) - abs(a) ) > 0.01)
         {
+            rotation += angle_increment;
+        }else{
             rotation = 0.0;
-            StaticLikeAxes = 0;
+            StaticLikeAngle = 0.0;
+            StaticLikeAxes = -1;
+        }
+        if (StaticLikeAxes == 0) // X axes
+        {
             glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
             axes_x = glm::transpose(RotatioPartnModelMatrix)*axes_x;
-            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_x);
-        }else if(Axes == 1 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2)) // Y axes
+            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_x);
+        }else if(StaticLikeAxes == 1) // Y axes
         {
-            rotation = 0.0;
-            StaticLikeAxes = 1;
             glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
             axes_y = glm::transpose(RotatioPartnModelMatrix)*axes_y;    
-            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_y);
-        }else if(Axes == 2 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2)) // Z axes
+            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_y);
+        }else if(StaticLikeAxes == 2) // Z axes
         {
-            rotation = 0.0;
-            StaticLikeAxes = 2;
             glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
             axes_z = glm::transpose(RotatioPartnModelMatrix)*axes_z;    
-            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_z);
+            modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(StaticLikeAngle) ? -1 : 1) * angle_increment), axes_z);
+        }
+    
+    
+        if (IsRotating == false)
+        {
+        
+            if(Axes == 0 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2) ) // X axes
+            {
+                rotation = 0.0;
+                StaticLikeAxes = 0;
+                StaticLikeAngle = angle;
+                glm::vec3 axes_x = glm::vec3(1.0f, 0.0f, 0.0f);
+                axes_x = glm::transpose(RotatioPartnModelMatrix)*axes_x;
+                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_x);
+            }else if(Axes == 1 ) // Y axes
+            {
+                rotation = 0.0;
+                StaticLikeAxes = 1;
+                StaticLikeAngle = angle;
+                glm::vec3 axes_y = glm::vec3(0.0f, 1.0f, 0.0f);
+                axes_y = glm::transpose(RotatioPartnModelMatrix)*axes_y;    
+                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_y);
+            }else if(Axes == 2 && !(StaticLikeAxes == 0 || StaticLikeAxes == 1 || StaticLikeAxes == 2)) // Z axes
+            {
+                rotation = 0.0;
+                StaticLikeAxes = 2;
+                StaticLikeAngle = angle;
+                glm::vec3 axes_z = glm::vec3(0.0f, 0.0f, 1.0f);
+                axes_z = glm::transpose(RotatioPartnModelMatrix)*axes_z;    
+                modelMatrix = glm::rotate(modelMatrix, glm::radians((std::signbit(angle) ? -1 : 1) *angle_increment), axes_z);
+            }
+
         }
     }
 
@@ -422,6 +389,8 @@ private:
     Rotation rotationWay;
     // Number of movement for shuffling
     int n_move;
+    // Possible Cube positions
+    float PossiblePositions[8*3];
 public:
     
     
@@ -467,6 +436,12 @@ public:
 
     // Shuffle the Cube
     void Shuffle();
+
+    // Set the possible positions
+    void SetPossiblePositions();
+
+    // Tells us whether the cube is rotation or not
+    bool IsRotating();
 };
 
 double map(double value, int inputMin, int inputMax, int outputMin, int outputMax);

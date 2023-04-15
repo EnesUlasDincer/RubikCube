@@ -196,7 +196,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         keyProperties_extern.KEY_RESTART_PRESSED = true;
     }
-    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_V && action == GLFW_PRESS) {
         keyProperties_extern.KEY_SHUFFLE_PRESSED = true;
     }
 }
