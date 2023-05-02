@@ -304,6 +304,11 @@ void Cube::SetColors()
     #pragma endregion ThirdRow
 }
 
+shaderClass& Cube::GetShader()
+{
+    return smallCubes[0].smallCubeProgram;
+}
+
 void Cube::Draw(glm::mat4& CameraMatrix, GLFWwindow* window, double prevTime)
 {
     for (int i = 0; i < n_cubes; i++)
@@ -312,7 +317,7 @@ void Cube::Draw(glm::mat4& CameraMatrix, GLFWwindow* window, double prevTime)
     }
 }
 
-void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern, KeyProperties keyProperties_extern)
+void Cube::Motion(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern, KeyProperties keyProperties_extern)
 {
     static bool click = false;
     
@@ -366,28 +371,13 @@ void Cube::SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::m
         glReadPixels(mouseProperties_extern.ndcMouseX, mouseProperties_extern.ndcMouseY, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, ClickedPixel);
         
         SelectedSmallCube = IdentifySmallCube(ClickedPixel);
-        COUT << SelectedSmallCube << ENDL;
+        //COUT << SelectedSmallCube << ENDL;
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-
-        
 
         // get the view and projection matrices
         glm::mat4 viewMatrix = ViewMatrix;
         glm::mat4 projectionMatrix = ProjectionMatrix;
-
-        //std::map<int, double> CosineSimilarityMap;
-        //// MostSimiliarOne();
-        //for (int i = 0; i < n_cubes; i++)
-        //{
-        //    CosineSimilarityMap.insert(std::make_pair(i,cosine_similarity(rayDir, smallCubes[i].center_coor)));
-        //}
-        //auto max_element = std::max_element(CosineSimilarityMap.begin(), CosineSimilarityMap.end(),[](const auto& pair1, const auto& pair2) {
-        //    return pair1.second < pair2.second;
-        //});
-
-        //std::cout << "The key of the biggest element is: " << max_element->first << std::endl;
         
     }
 

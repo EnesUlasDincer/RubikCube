@@ -420,7 +420,7 @@ public:
     void Draw(glm::mat4& CameraMatix,GLFWwindow* window, double prevTime);
 
     // void SelectSmallCube(glm::mat4& CameraMatrix, GLFWwindow* window);
-    void SelectSmallCube(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern, KeyProperties keyProperties_extern);
+    void Motion(glm::mat4& CameraMatrix,glm::mat4& ViewMatrix, glm::mat4& ProjectionMatrix, GLFWwindow* window, MouseProperties mouseProperties_extern, KeyProperties keyProperties_extern);
 
     // Identify the Small Cube via clicked pixel's color
     int IdentifySmallCube(unsigned char* ClickedPixel);
@@ -428,6 +428,9 @@ public:
     // Get the keyword and decide the rotation
     void GetKeyword(KeyProperties keyProperties_extern);
     
+    // Get the shader
+    shaderClass& GetShader();
+
     // Apply rotation to the smallCubes
     void ApplyRotation(glm::mat4& CameraMatrix);
 

@@ -3,11 +3,23 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <signal.h>
+#include <math.h>
+
 #include "ElementBuffer.hpp"
 #include "VertexArray.hpp"
 #include "shaderClass.hpp"
-#include "BouncingBall.hpp"
 #include "Texture.hpp"
+
+
+
+#define PRINT_MACROS
+
+#define COUT std::cout
+#define ENDL std::endl
+
+
+#define deg2rad(x) x*M_PI/180
+
 
 #ifndef SCREEN_SIZE
 #define SCREEN_SIZE

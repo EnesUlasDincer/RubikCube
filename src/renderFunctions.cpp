@@ -28,10 +28,8 @@ void info(){
     printf (" Welcome to the Bouncing Ball game!!!! \n"
             "---------------------------------------\n"
             "Here are the game controllers:\n"
-            "s -- starts the game\n"
-            "p -- pause the game\n"
-            "r -- restarts the game\n"
-            "c -- switch between two colors\n"
+            "r -- Restarts the cube\n"
+            "v -- Randomly shuffles the cube\n"
             "h -- help about controllers\n"
             "q -- quit (exit) the program\n"
             );
@@ -42,70 +40,23 @@ void infoHelp(){
     printf (
             "---------------------------------------\n"
             "Here are the informations about game controllers:\n"
-            "s -- starts the game\n"
-            "p -- pause the game\n"
-            "r -- restarts the game\n"
-            "c -- switch between two colors (RED or GREEN)\n"
+            "r -- Restarts the cube\n"
+            "v -- Randomly shuffles the cube\n"
+
+            "Button 2 rotates the cube back to front\n"
+            "Button 8 rotates the cube front to back\n"
+            "Button 4 rotates the cube right to left\n"
+            "Button 6 rotates the cube left to right\n"
+            "Button 3 rotates the cube counter clockwise\n"
+            "Button 7 rotates the cube clockwise\n"
+
             "h -- help about controllers\n"
             "q -- quit (exit) the program\n"
-
-            "whenever right button is pressed --> "
-            "object type changes sphere to cube or viceversa.\n"
-
-            "whenever left button is pressed --> "
-            "object apperance changes lines to solid or viceversa.\n"
             
             "---------------------------------------\n"
     );
 }
 
-
-
-enum Colors{
-        Red,
-        Green
-    };
-
-Colors ColorSelector(GLFWwindow* window)
-{
-    static Colors color = Red;
-
-    static int state = 0;
-
-    bool Condition = glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS;
-
-    STATE_MACHINE(Condition, state, color, Green, Red);
-    return color;
-}
-
-enum ObjectTypes{
-        Rectangle,
-        Sphere
-    };
-
-ObjectTypes ObjectTypeSelector(GLFWwindow* window)
-{
-
-    static ObjectTypes objectType = Rectangle;
-
-    static int state = 0;
-
-    STATE_MACHINE(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT), state, objectType, Sphere, Rectangle);
-    
-    return objectType;
-}
-
-static int DrawingTypeSelector(GLFWwindow* window)
-{
-
-    static int DrawingType = GL_LINE_LOOP;
-
-    static int state = 0;
-
-    STATE_MACHINE(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT), state, DrawingType, GL_TRIANGLE_FAN, GL_LINE_LOOP);
-    
-    return DrawingType;
-}
 
 void GLClearError()
 {
@@ -198,6 +149,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
     if (key == GLFW_KEY_V && action == GLFW_PRESS) {
         keyProperties_extern.KEY_SHUFFLE_PRESSED = true;
+    }
+
+    // Information about cube
+    if (key == GLFW_KEY_H && action == GLFW_PRESS) {
+        infoHelp();
     }
 }
 
